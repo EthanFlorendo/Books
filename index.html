@@ -7,7 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
   :root {
     --ink: #1a1208; --paper: #f5f0e8; --cream: #ede6d3; --aged: #d4c9a8;
@@ -68,32 +67,6 @@
   .field-group label { font-size: 0.67rem; letter-spacing: 2px; text-transform: uppercase; color: var(--paused); }
   .field-group input, .field-group select { font-family: 'Courier Prime', monospace; font-size: 0.85rem; padding: 7px 8px; background: var(--paper); border: 1px solid var(--aged); color: var(--ink); outline: none; transition: border-color 0.2s; }
   .field-group input:focus, .field-group select:focus { border-color: var(--rust); }
-
-  /* Book search */
-  .search-wrap { position: relative; grid-column: 1 / -1; }
-  .search-wrap input { width: 100%; font-family: 'Courier Prime', monospace; font-size: 0.9rem; padding: 10px 12px 10px 38px; background: var(--paper); border: 2px solid var(--rust); color: var(--ink); outline: none; }
-  .search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--rust); font-size: 1rem; pointer-events: none; }
-  .search-status { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: var(--paused); font-style: italic; }
-  .search-results { position: absolute; top: 100%; left: 0; right: 0; background: var(--paper); border: 2px solid var(--rust); border-top: none; z-index: 50; max-height: 340px; overflow-y: auto; box-shadow: 4px 4px 0 var(--shadow); }
-  .search-result-item { display: flex; gap: 10px; align-items: center; padding: 8px 10px; cursor: pointer; border-bottom: 1px solid var(--aged); transition: background 0.15s; }
-  .search-result-item:last-child { border-bottom: none; }
-  .search-result-item:hover { background: var(--cream); }
-  .sri-cover { width: 36px; height: 52px; object-fit: cover; flex-shrink: 0; background: var(--aged); border: 1px solid var(--aged); }
-  .sri-cover-placeholder { width: 36px; height: 52px; flex-shrink: 0; background: var(--aged); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: var(--paused); border: 1px solid var(--aged); }
-  .sri-info { flex: 1; min-width: 0; }
-  .sri-title { font-weight: 700; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .sri-author { font-size: 0.75rem; color: var(--paused); margin-top: 2px; }
-  .sri-meta { font-size: 0.7rem; color: var(--paused); margin-top: 2px; }
-
-  /* Cover preview in form */
-  .cover-preview-wrap { display: flex; align-items: flex-start; gap: 14px; grid-column: 1 / -1; }
-  .cover-preview { width: 60px; height: 88px; object-fit: cover; border: 2px solid var(--aged); flex-shrink: 0; display: none; }
-  .cover-preview.show { display: block; }
-  .cover-selected-info { font-size: 0.78rem; color: var(--paused); font-style: italic; line-height: 1.5; }
-  .cover-selected-info strong { color: var(--ink); font-style: normal; font-size: 0.88rem; display: block; margin-bottom: 2px; }
-
-  /* Cover thumbnail in table */
-  .book-cover-thumb { width: 28px; height: 40px; object-fit: cover; border: 1px solid var(--aged); vertical-align: middle; margin-right: 6px; }
   .btn { font-family: 'Playfair Display', serif; font-size: 0.92rem; font-weight: 700; padding: 10px 24px; cursor: pointer; border: 2px solid var(--ink); transition: all 0.2s; }
   .btn-primary { background: var(--ink); color: var(--paper); }
   .btn-primary:hover { background: var(--rust); border-color: var(--rust); }
@@ -129,25 +102,7 @@
   .modal-actions { display: flex; gap: 11px; margin-top: 16px; flex-wrap: wrap; }
   .close-modal { float: right; cursor: pointer; font-size: 1.3rem; color: var(--paused); background: none; border: none; }
 
-  /* Excel toolbar */
-  .excel-bar { background: var(--cream); border-bottom: 2px solid var(--aged); padding: 10px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-  .excel-bar-label { font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; color: var(--paused); margin-right: 4px; }
-  .btn-excel { font-family: 'Playfair Display', serif; font-size: 0.82rem; font-weight: 700; padding: 7px 16px; cursor: pointer; border: 2px solid var(--forest); color: var(--forest); background: none; transition: all 0.2s; white-space: nowrap; }
-  .btn-excel:hover { background: var(--forest); color: var(--paper); }
-  .btn-excel.import { border-color: var(--gold); color: var(--gold); }
-  .btn-excel.import:hover { background: var(--gold); color: var(--ink); }
-  .excel-select { font-family: 'Courier Prime', monospace; font-size: 0.82rem; padding: 6px 9px; background: var(--paper); border: 1px solid var(--aged); color: var(--ink); outline: none; }
-  .excel-status { font-size: 0.75rem; font-style: italic; color: var(--paused); margin-left: 4px; }
-  .excel-status.ok { color: var(--forest); }
-  .excel-status.err { color: var(--rust); }
-  .sheets-sync-status { font-size: 0.72rem; font-style: italic; margin-left: auto; padding: 4px 10px; border-left: 1px solid var(--aged); color: var(--paused); white-space: nowrap; }
-  .sheets-sync-status.ok { color: var(--forest); }
-  .sheets-sync-status.err { color: var(--rust); }
-  .sheets-sync-status.syncing { color: var(--gold); }
-  /* Import modal */
-  .import-preview { font-size: 0.78rem; max-height: 220px; overflow-y: auto; border: 1px solid var(--aged); background: var(--cream); padding: 10px; margin-top: 10px; }
-  .import-preview table { font-size: 0.72rem; }
-  .import-row-ok { color: var(--forest); } .import-row-skip { color: var(--paused); }
+  @media (max-width: 600px) {
     .add-form { grid-template-columns: 1fr; }
     .add-form .full { grid-column: 1; }
     nav button { padding: 10px 13px; font-size: 0.82rem; }
@@ -172,24 +127,6 @@
   <button data-tab="ethan">Ethan</button>
   <button data-tab="tony">Tony</button>
 </nav>
-
-<span id="sheets-sync-status" style="display:none"></span>
-<span id="excel-status" style="display:none"></span>
-<input type="file" id="excel-file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleExcelImport(event)">
-
-<!-- Import preview modal -->
-<div class="modal-overlay" id="import-modal">
-  <div class="modal" style="max-width:620px">
-    <button class="close-modal" id="close-import">&times;</button>
-    <h3>Import Preview</h3>
-    <div id="import-summary" style="font-size:.85rem;margin-bottom:10px"></div>
-    <div class="import-preview" id="import-preview-table"></div>
-    <div class="modal-actions">
-      <button class="btn btn-primary" id="confirm-import-btn">Import All Valid Rows</button>
-      <button class="btn btn-danger" id="cancel-import-btn">Cancel</button>
-    </div>
-  </div>
-</div>
 
 <div id="tab-stats" class="tab-content active">
   <div class="leaderboard"><h2>— Monthly Standings —</h2><div id="leaderboard-list"></div></div>
@@ -263,21 +200,12 @@ async function loadAll() {
   DB = { Ewan:[], Isaac:[], Ethan:[], Tony:[] };
   (data||[]).forEach(b => { if (DB[b.reader]) DB[b.reader].push(b); });
   renderAll();
-  // Debounce sync — wait 1.5s after last loadAll before pushing to Sheets
   clearTimeout(_syncTimer);
   _syncTimer = setTimeout(() => syncToSheets(), 1500);
 }
 
 // ── Google Sheets Sync ────────────────────────────────────────────
-function setSyncStatus(msg, type) {
-  const el = document.getElementById('sheets-sync-status');
-  if (!el) return;
-  el.textContent = msg;
-  el.className = 'sheets-sync-status ' + (type||'');
-}
-
 async function syncToSheets() {
-  setSyncStatus('⟳ Syncing to Google Sheets…', 'syncing');
   try {
     const stats = ['Ewan','Isaac','Ethan','Tony'].map(u => {
       const s = userStats(u);
@@ -296,26 +224,13 @@ async function syncToSheets() {
         monthlyPages: s.monthlyPages,
       };
     });
-
-    const payload = {
-      action: 'sync_all',
-      books: DB,
-      stats,
-    };
-
-    // Apps Script requires no-cors for cross-origin POST from browser
     await fetch(SHEETS_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ action: 'sync_all', books: DB, stats }),
     });
-
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    setSyncStatus(`✓ Sheets synced at ${timeStr}`, 'ok');
   } catch(e) {
-    setSyncStatus('✗ Sheets sync failed', 'err');
     console.warn('Sheets sync error:', e);
   }
 }
@@ -358,10 +273,7 @@ function renderStats() {
     </div>`).join('');
   document.getElementById('stats-grid').innerHTML = users.map(u=>{
     const s=userStats(u);
-    const curr=s.current.map(b=>{
-      const thumb = b.cover_url ? `<img src="${esc(b.cover_url)}" style="width:18px;height:26px;object-fit:cover;vertical-align:middle;margin-right:4px;border:1px solid var(--aged)" onerror="this.style.display='none'">` : '';
-      return `<span class="current-book-tag">${thumb}${esc(b.title)}</span>`;
-    }).join('')||'<em style="color:var(--paused);font-size:.75rem">Nothing current</em>';
+    const curr=s.current.map(b=>`<span class="current-book-tag">${esc(b.title)}</span>`).join('')||'<em style="color:var(--paused);font-size:.75rem">Nothing current</em>';
     return `<div class="reader-card">
       <h3>${u}</h3>
       <div class="stat-row"><span>Total Started</span><span class="stat-val">${s.books.length}</span></div>
@@ -393,21 +305,7 @@ function renderUserTab(user) {
     </div>
     <div class="section-title">— Add a Book —</div>
     <div class="add-form">
-      <div class="search-wrap full">
-        <span class="search-icon">🔍</span>
-        <input type="text" id="${user}-search" placeholder="Search by title or author to autofill…" autocomplete="off"
-          oninput="onBookSearch('${user}')" onfocus="showDropdown('${user}')" onblur="hideDropdown('${user}')">
-        <span class="search-status" id="${user}-search-status"></span>
-        <div class="search-results" id="${user}-search-results" style="display:none"></div>
-      </div>
-      <div class="cover-preview-wrap">
-        <img class="cover-preview" id="${user}-cover-preview" src="" alt="cover">
-        <div class="cover-selected-info" id="${user}-cover-info" style="display:none">
-          <strong id="${user}-cover-title-label"></strong>
-          <span id="${user}-cover-author-label"></span>
-        </div>
-      </div>
-      <div class="field-group"><label>Title *</label><input type="text" id="${user}-title" placeholder="Book title (autofilled or type manually)"></div>
+      <div class="field-group"><label>Title *</label><input type="text" id="${user}-title" placeholder="Book title"></div>
       <div class="field-group"><label>Author *</label><input type="text" id="${user}-author" placeholder="Author name"></div>
       <div class="field-group"><label>Pages Read</label><input type="number" id="${user}-pages" placeholder="0" min="0"></div>
       <div class="field-group"><label>Total Pages</label><input type="number" id="${user}-totalPages" placeholder="0" min="0"></div>
@@ -433,12 +331,10 @@ function renderUserTab(user) {
       ${s.books.length===0
         ? `<div class="no-books">No books recorded yet.</div>`
         : `<table>
-          <thead><tr><th></th><th>Title</th><th>Author</th><th>Type</th><th>Status</th><th>Progress</th><th>Rating</th><th>Started</th><th>Finished</th><th></th></tr></thead>
+          <thead><tr><th>Title</th><th>Author</th><th>Type</th><th>Status</th><th>Progress</th><th>Rating</th><th>Started</th><th>Finished</th><th></th></tr></thead>
           <tbody>${s.books.map(b=>{
             const pct=b.total_pages>0?Math.min(100,Math.round((b.pages/b.total_pages)*100)):0;
-            const thumb = b.cover_url ? `<img class="book-cover-thumb" src="${esc(b.cover_url)}" alt="" onerror="this.style.display='none'">` : '<span style="display:inline-block;width:28px;height:40px;background:var(--aged);vertical-align:middle;margin-right:6px;border:1px solid var(--aged)"></span>';
             return `<tr>
-              <td style="padding:4px 6px">${thumb}</td>
               <td><strong>${esc(b.title)}</strong>${b.reread?' <span title="Reread" style="color:var(--gold)">↺</span>':''}</td>
               <td>${esc(b.author||'')}</td><td>${b.type||''}</td>
               <td><span class="status-badge status-${b.status}">${b.status}</span></td>
@@ -455,16 +351,12 @@ function renderUserTab(user) {
 
 // ── Add ───────────────────────────────────────────────────────────
 async function addBook(user) {
-  if (!sb) { alert('Not connected to database.'); return; }
+  if (!sb) { alert('Not connected to Supabase yet. Fill in your credentials above.'); return; }
   const g = id => document.getElementById(`${user}-${id}`)?.value.trim();
   const title=g('title'), author=g('author');
   if (!title||!author) { alert('Title and Author are required.'); return; }
   const btn=document.getElementById(`${user}-add-btn`);
   btn.disabled=true; btn.textContent='Saving…';
-
-  // Get stored cover URL for this user's current selection
-  const coverUrl = window._selectedCover?.[user] || null;
-
   const { error } = await sb.from('books').insert({
     reader:user, title, author,
     pages:parseInt(g('pages'))||0,
@@ -475,349 +367,13 @@ async function addBook(user) {
     rating:g('rating')?parseInt(g('rating')):null,
     reread:g('reread')==='true',
     notes:g('notes')||'',
-    cover_url: coverUrl,
   });
   btn.disabled=false; btn.textContent='Add to List';
   if (error) { alert('Save failed: '+error.message); return; }
-  // Clear selection
-  if (window._selectedCover) window._selectedCover[user] = null;
   await loadAll();
 }
 
-// ── Open Library Search ───────────────────────────────────────────
-window._selectedCover = {};
-window._searchTimers = {};
-
-function onBookSearch(user) {
-  const q = document.getElementById(`${user}-search`).value.trim();
-  const status = document.getElementById(`${user}-search-status`);
-  const results = document.getElementById(`${user}-search-results`);
-  clearTimeout(window._searchTimers[user]);
-  if (q.length < 2) { results.style.display='none'; status.textContent=''; return; }
-  status.textContent = 'Searching…';
-  window._searchTimers[user] = setTimeout(() => searchBooks(user, q), 400);
-}
-
-async function searchBooks(user, q) {
-  const status = document.getElementById(`${user}-search-status`);
-  const results = document.getElementById(`${user}-search-results`);
-  try {
-    const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&fields=key,title,author_name,number_of_pages_median,cover_i,first_publish_year,subject&limit=8`;
-    const res = await fetch(url);
-    const data = await res.json();
-    status.textContent = '';
-    if (!data.docs || data.docs.length === 0) {
-      results.innerHTML = '<div style="padding:12px;font-style:italic;color:var(--paused);font-size:.82rem">No results found</div>';
-      results.style.display = 'block';
-      return;
-    }
-    results.innerHTML = data.docs.map(book => {
-      const title  = esc(book.title || '');
-      const author = esc((book.author_name || []).join(', '));
-      const pages  = book.number_of_pages_median || '';
-      const year   = book.first_publish_year || '';
-      const coverId = book.cover_i;
-      const coverUrl = coverId ? `https://covers.openlibrary.org/b/id/${coverId}-M.jpg` : '';
-      const coverHtml = coverUrl
-        ? `<img class="sri-cover" src="${coverUrl}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
-          + `<div class="sri-cover-placeholder" style="display:none">📖</div>`
-        : `<div class="sri-cover-placeholder">📖</div>`;
-      const metaParts = [];
-      if (pages) metaParts.push(`${pages} pages`);
-      if (year)  metaParts.push(`${year}`);
-      return `<div class="search-result-item"
-        onmousedown="selectBook('${user}', ${JSON.stringify(book.title)}, ${JSON.stringify((book.author_name||[]).join(', '))}, ${pages||0}, ${JSON.stringify(coverUrl)})">
-        ${coverHtml}
-        <div class="sri-info">
-          <div class="sri-title">${title}</div>
-          <div class="sri-author">${author}</div>
-          ${metaParts.length ? `<div class="sri-meta">${metaParts.join(' · ')}</div>` : ''}
-        </div>
-      </div>`;
-    }).join('');
-    results.style.display = 'block';
-  } catch(e) {
-    status.textContent = 'Search failed';
-    results.style.display = 'none';
-  }
-}
-
-function selectBook(user, title, author, pages, coverUrl) {
-  // Autofill form fields
-  const set = (id, val) => { const el = document.getElementById(`${user}-${id}`); if (el) el.value = val; };
-  set('title', title);
-  set('author', author);
-  if (pages) set('totalPages', pages);
-
-  // Store cover URL
-  if (!window._selectedCover) window._selectedCover = {};
-  window._selectedCover[user] = coverUrl || null;
-
-  // Show cover preview
-  const preview = document.getElementById(`${user}-cover-preview`);
-  const info    = document.getElementById(`${user}-cover-info`);
-  const tLabel  = document.getElementById(`${user}-cover-title-label`);
-  const aLabel  = document.getElementById(`${user}-cover-author-label`);
-  if (coverUrl && preview) {
-    preview.src = coverUrl;
-    preview.classList.add('show');
-  } else if (preview) {
-    preview.classList.remove('show');
-  }
-  if (info) {
-    tLabel.textContent = title;
-    aLabel.textContent = author;
-    info.style.display = 'block';
-  }
-
-  // Hide dropdown + clear search box
-  const results = document.getElementById(`${user}-search-results`);
-  if (results) results.style.display = 'none';
-  const searchEl = document.getElementById(`${user}-search`);
-  if (searchEl) searchEl.value = '';
-}
-
-function showDropdown(user) {
-  const q = document.getElementById(`${user}-search`)?.value.trim();
-  const results = document.getElementById(`${user}-search-results`);
-  if (q && q.length >= 2 && results && results.innerHTML) results.style.display = 'block';
-}
-
-function hideDropdown(user) {
-  // Small delay so mousedown on item fires first
-  setTimeout(() => {
-    const results = document.getElementById(`${user}-search-results`);
-    if (results) results.style.display = 'none';
-  }, 200);
-}
-
-// ── Excel Export ──────────────────────────────────────────────────
-function exportExcel() {
-  const target = document.getElementById('excel-user-select').value;
-  const status = document.getElementById('excel-status');
-  const users = target === 'all' ? ['Ewan','Isaac','Ethan','Tony'] : [target];
-
-  const wb = XLSX.utils.book_new();
-
-  users.forEach(user => {
-    const books = DB[user] || [];
-    const rows = books.map(b => ({
-      'Reader':         b.reader,
-      'Title':          b.title || '',
-      'Author':         b.author || '',
-      'Pages Read':     b.pages || 0,
-      'Total Pages':    b.total_pages || 0,
-      'Completion':     b.total_pages > 0 ? Math.round((b.pages / b.total_pages) * 100) + '%' : '',
-      'Type':           b.type || '',
-      'Status':         b.status || '',
-      'Date Started':   b.date_started || '',
-      'Date Finished':  b.date_finished || '',
-      'Rating':         b.rating || '',
-      'Reread':         b.reread ? 'Yes' : 'No',
-      'Notes':          b.notes || '',
-    }));
-
-    if (rows.length === 0) {
-      rows.push({ 'Reader': user, 'Title': '(no books)', 'Author': '', 'Pages Read': 0, 'Total Pages': 0, 'Completion': '', 'Type': '', 'Status': '', 'Date Started': '', 'Date Finished': '', 'Rating': '', 'Reread': '', 'Notes': '' });
-    }
-
-    const ws = XLSX.utils.json_to_sheet(rows);
-
-    // Column widths
-    ws['!cols'] = [
-      {wch:8},{wch:32},{wch:22},{wch:12},{wch:12},{wch:12},
-      {wch:14},{wch:12},{wch:14},{wch:14},{wch:8},{wch:8},{wch:30}
-    ];
-
-    XLSX.utils.book_append_sheet(wb, ws, user);
-  });
-
-  // Statistics sheet
-  const statsRows = ['Ewan','Isaac','Ethan','Tony'].map(u => {
-    const s = userStats(u);
-    return {
-      'Reader':           u,
-      'Total Books':      s.books.length,
-      'Completed':        s.finished.length,
-      'Currently Reading':s.current.length,
-      'Total Pages Read': s.allPages,
-      'Avg Rating':       s.avgRating !== '—' ? s.avgRating : '',
-      'Novels':           s.byType['Novel'],
-      'Short Stories':    s.byType['Short Story'],
-      'Poetry':           s.byType['Poetry'],
-      'Plays':            s.byType['Play'],
-      'Monthly Completed':s.monthlyCompleted.length,
-      'Monthly Pages':    s.monthlyPages,
-    };
-  });
-  const statsWs = XLSX.utils.json_to_sheet(statsRows);
-  statsWs['!cols'] = [{wch:10},{wch:13},{wch:11},{wch:18},{wch:16},{wch:11},{wch:8},{wch:14},{wch:9},{wch:7},{wch:18},{wch:14}];
-  XLSX.utils.book_append_sheet(wb, statsWs, 'Statistics');
-
-  const filename = `ReadingLeague_${target}_${new Date().toISOString().slice(0,10)}.xlsx`;
-  XLSX.writeFile(wb, filename);
-  status.textContent = `✓ Exported ${filename}`; status.className = 'excel-status ok';
-  setTimeout(() => { status.textContent = ''; }, 4000);
-}
-
-// ── Excel Import ──────────────────────────────────────────────────
-let _importRows = [];
-
-function handleExcelImport(e) {
-  const file = e.target.files[0];
-  e.target.value = ''; // reset so same file can be re-imported
-  if (!file) return;
-  const status = document.getElementById('excel-status');
-  status.textContent = 'Reading file…'; status.className = 'excel-status';
-
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    try {
-      const wb = XLSX.read(ev.target.result, { type: 'binary', cellDates: true });
-      const allRows = [];
-
-      wb.SheetNames.forEach(sheetName => {
-        // Skip Statistics sheet
-        if (sheetName.toLowerCase() === 'statistics') return;
-        const ws = wb.Sheets[sheetName];
-        const json = XLSX.utils.sheet_to_json(ws, { defval: '' });
-        json.forEach(row => {
-          // Normalize column names (case-insensitive, flexible)
-          const get = (...keys) => {
-            for (const k of keys) {
-              const found = Object.keys(row).find(rk => rk.toLowerCase().replace(/\s+/g,'') === k.toLowerCase().replace(/\s+/g,''));
-              if (found && row[found] !== '') return String(row[found]).trim();
-            }
-            return '';
-          };
-
-          const reader_name = get('reader') || sheetName;
-          const validReaders = ['Ewan','Isaac','Ethan','Tony'];
-          // Match reader name case-insensitively
-          const matchedReader = validReaders.find(r => r.toLowerCase() === reader_name.toLowerCase());
-          const title = get('title');
-          const author = get('author');
-
-          if (!title || title === '(no books)') return; // skip empty/placeholder rows
-
-          const formatDate = (val) => {
-            if (!val) return null;
-            if (val instanceof Date) return val.toISOString().slice(0,10);
-            // Try parsing string dates
-            const d = new Date(val);
-            if (!isNaN(d)) return d.toISOString().slice(0,10);
-            return null;
-          };
-
-          const pages     = parseInt(get('pagesread','pages')) || 0;
-          const totalPages= parseInt(get('totalpages','total pages')) || 0;
-          const status    = get('status') || 'Current';
-          const type      = get('type') || 'Novel';
-          const ratingRaw = get('rating');
-          const rating    = ratingRaw ? parseInt(ratingRaw) : null;
-          const rereadRaw = get('reread');
-          const reread    = rereadRaw.toLowerCase() === 'yes' || rereadRaw === 'true';
-          const dateStarted  = formatDate(get('datestarted','date started'));
-          const dateFinished = formatDate(get('datefinished','date finished'));
-          const notes     = get('notes');
-
-          allRows.push({
-            _valid: !!matchedReader,
-            _reader: matchedReader || reader_name,
-            reader: matchedReader || null,
-            title, author, pages, total_pages: totalPages,
-            type, status, date_started: dateStarted,
-            date_finished: dateFinished, rating, reread, notes,
-            cover_url: null,
-          });
-        });
-      });
-
-      _importRows = allRows;
-      showImportPreview(allRows, file.name);
-      status.textContent = ''; status.className = 'excel-status';
-    } catch(err) {
-      status.textContent = '✗ Failed to read file: ' + err.message;
-      status.className = 'excel-status err';
-    }
-  };
-  reader.readAsBinaryString(file);
-}
-
-function showImportPreview(rows, filename) {
-  const valid = rows.filter(r => r._valid);
-  const invalid = rows.filter(r => !r._valid);
-
-  document.getElementById('import-summary').innerHTML =
-    `<strong>${filename}</strong> — found <strong>${rows.length}</strong> book(s): ` +
-    `<span style="color:var(--forest)">${valid.length} valid</span>` +
-    (invalid.length ? `, <span style="color:var(--paused)">${invalid.length} skipped (unknown reader)</span>` : '');
-
-  const tableHtml = `<table style="width:100%;border-collapse:collapse">
-    <thead><tr style="background:var(--ink);color:var(--paper)">
-      <th style="padding:5px 8px;text-align:left">Reader</th>
-      <th style="padding:5px 8px;text-align:left">Title</th>
-      <th style="padding:5px 8px;text-align:left">Author</th>
-      <th style="padding:5px 8px;text-align:left">Pages</th>
-      <th style="padding:5px 8px;text-align:left">Status</th>
-      <th style="padding:5px 8px;text-align:left">✓</th>
-    </tr></thead>
-    <tbody>
-    ${rows.map(r => `<tr class="${r._valid ? 'import-row-ok' : 'import-row-skip'}" style="border-bottom:1px solid var(--aged)">
-      <td style="padding:4px 8px">${esc(r._reader)}</td>
-      <td style="padding:4px 8px">${esc(r.title)}</td>
-      <td style="padding:4px 8px">${esc(r.author)}</td>
-      <td style="padding:4px 8px">${r.pages}/${r.total_pages||'?'}</td>
-      <td style="padding:4px 8px">${esc(r.status)}</td>
-      <td style="padding:4px 8px">${r._valid ? '✓' : '✗'}</td>
-    </tr>`).join('')}
-    </tbody></table>`;
-
-  document.getElementById('import-preview-table').innerHTML = tableHtml;
-  document.getElementById('import-modal').classList.add('open');
-}
-
-document.getElementById('confirm-import-btn').onclick = async () => {
-  const valid = _importRows.filter(r => r._valid);
-  if (!valid.length) { closeImportModal(); return; }
-
-  const status = document.getElementById('excel-status');
-  document.getElementById('confirm-import-btn').disabled = true;
-  document.getElementById('confirm-import-btn').textContent = 'Importing…';
-
-  // Insert in chunks of 50
-  let inserted = 0;
-  const toInsert = valid.map(r => ({
-    reader: r.reader, title: r.title, author: r.author,
-    pages: r.pages, total_pages: r.total_pages,
-    type: r.type, status: r.status,
-    date_started: r.date_started, date_finished: r.date_finished,
-    rating: r.rating, reread: r.reread, notes: r.notes, cover_url: r.cover_url,
-  }));
-
-  for (let i = 0; i < toInsert.length; i += 50) {
-    const chunk = toInsert.slice(i, i + 50);
-    const { error } = await sb.from('books').insert(chunk);
-    if (error) { alert('Import error: ' + error.message); break; }
-    inserted += chunk.length;
-  }
-
-  closeImportModal();
-  status.textContent = `✓ Imported ${inserted} book(s)`; status.className = 'excel-status ok';
-  setTimeout(() => { status.textContent = ''; }, 5000);
-  await loadAll();
-};
-
-document.getElementById('cancel-import-btn').onclick = closeImportModal;
-document.getElementById('close-import').onclick = closeImportModal;
-document.getElementById('import-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeImportModal(); });
-
-function closeImportModal() {
-  document.getElementById('import-modal').classList.remove('open');
-  document.getElementById('confirm-import-btn').disabled = false;
-  document.getElementById('confirm-import-btn').textContent = 'Import All Valid Rows';
-  _importRows = [];
-}
+// ── Edit ──────────────────────────────────────────────────────────
 let editCtx=null;
 function openEdit(user,bookId) {
   const book=(DB[user]||[]).find(b=>b.id===bookId);
