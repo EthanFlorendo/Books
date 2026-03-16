@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Reading League</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1208;
+    --paper: #f5f0e8;
+    --cream: #ede6d3;
+    --aged: #d4c9a8;
+    --rust: #b5450b;
+    --forest: #2d5016;
+    --gold: #c9952a;
+    --shadow: rgba(26,18,8,0.15);
+    --current: #2d5016;
+    --completed: #b5450b;
+    --paused: #7a6a4a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Courier Prime', monospace;
+    min-height: 100vh;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(180,160,100,0.12) 28px),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  }
+
+  header {
+    text-align: center;
+    padding: 48px 24px 32px;
+    border-bottom: 3px double var(--aged);
+    position: relative;
+  }
+  header::before {
+    content: '❧';
+    display: block;
+    font-size: 28px;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.2rem, 6vw, 4rem);
+    font-weight: 900;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+  .subtitle {
+    font-style: italic;
+    color: var(--paused);
+    margin-top: 8px;
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  header::after {
+    content: '— est. 2026 —';
+    display: block;
+    margin-top: 10px;
+    font-size: 0.75rem;
+    color: var(--aged);
+    letter-spacing: 3px;
+  }
+
+  nav {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    border-bottom: 2px solid var(--aged);
+    overflow-x: auto;
+  }
+  nav button {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 14px 28px;
+    background: none;
+    border: none;
+    border-right: 1px solid var(--aged);
+    cursor: pointer;
+    color: var(--paused);
+    transition: all 0.2s;
+    white-space: nowrap;
+    position: relative;
+  }
+  nav button:first-child { border-left: 1px solid var(--aged); }
+  nav button.active {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  nav button:hover:not(.active) { background: var(--cream); color: var(--ink); }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* STATISTICS TAB */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+    padding: 32px 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .reader-card {
+    background: var(--cream);
+    border: 2px solid var(--aged);
+    padding: 24px;
+    position: relative;
+    box-shadow: 4px 4px 0 var(--aged);
+  }
+  .reader-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 900;
+    border-bottom: 2px solid var(--aged);
+    padding-bottom: 10px;
+    margin-bottom: 16px;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 5px 0;
+    border-bottom: 1px dotted var(--aged);
+    font-size: 0.85rem;
+  }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-val {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--rust);
+  }
+  .current-books {
+    margin-top: 14px;
+  }
+  .current-book-tag {
+    background: var(--forest);
+    color: var(--paper);
+    font-size: 0.72rem;
+    padding: 3px 8px;
+    display: inline-block;
+    margin: 3px 3px 0 0;
+    font-style: italic;
+  }
+
+  .leaderboard {
+    max-width: 700px;
+    margin: 0 auto 32px;
+    padding: 0 24px;
+  }
+  .leaderboard h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    text-align: center;
+    padding: 24px 0 16px;
+    font-style: italic;
+  }
+  .lb-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    border: 1px solid var(--aged);
+    margin-bottom: -1px;
+    background: var(--cream);
+    transition: background 0.15s;
+  }
+  .lb-row:hover { background: var(--paper); }
+  .lb-rank {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--aged);
+    width: 36px;
+    text-align: center;
+  }
+  .lb-rank.first { color: var(--gold); }
+  .lb-rank.second { color: #9a9a9a; }
+  .lb-rank.third { color: #a0714a; }
+  .lb-name { font-weight: 700; font-size: 1rem; flex: 1; }
+  .lb-stat { font-size: 0.8rem; color: var(--paused); text-align: right; }
+  .lb-stat strong { color: var(--ink); font-size: 1rem; display: block; }
+
+  /* USER TAB */
+  .user-panel { max-width: 960px; margin: 0 auto; padding: 24px; }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: 900;
+    font-style: italic;
+    border-bottom: 2px solid var(--aged);
+    padding-bottom: 8px;
+    margin: 28px 0 16px;
+  }
+
+  /* ADD BOOK FORM */
+  .add-form {
+    background: var(--cream);
+    border: 2px solid var(--aged);
+    padding: 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .add-form .full { grid-column: 1 / -1; }
+  .field-group { display: flex; flex-direction: column; gap: 5px; }
+  .field-group label { font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; color: var(--paused); }
+  .field-group input, .field-group select, .field-group textarea {
+    font-family: 'Courier Prime', monospace;
+    font-size: 0.9rem;
+    padding: 8px 10px;
+    background: var(--paper);
+    border: 1px solid var(--aged);
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .field-group input:focus, .field-group select:focus {
+    border-color: var(--rust);
+  }
+  .btn {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 12px 28px;
+    cursor: pointer;
+    border: 2px solid var(--ink);
+    transition: all 0.2s;
+  }
+  .btn-primary { background: var(--ink); color: var(--paper); }
+  .btn-primary:hover { background: var(--rust); border-color: var(--rust); }
+  .btn-danger { background: none; color: var(--rust); border-color: var(--rust); font-size: 0.75rem; padding: 4px 10px; }
+  .btn-danger:hover { background: var(--rust); color: var(--paper); }
+  .btn-sm { font-size: 0.8rem; padding: 6px 14px; }
+
+  /* BOOK TABLE */
+  .book-table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  thead tr { background: var(--ink); color: var(--paper); }
+  th { font-family: 'Playfair Display', serif; font-weight: 700; text-align: left; padding: 10px 12px; white-space: nowrap; }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--aged); vertical-align: middle; }
+  tr:nth-child(even) td { background: var(--cream); }
+  tr:hover td { background: #ede0c0; }
+  .status-badge {
+    padding: 2px 8px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .status-Current { background: var(--forest); color: var(--paper); }
+  .status-Completed { background: var(--rust); color: var(--paper); }
+  .status-Paused { background: var(--paused); color: var(--paper); }
+  .progress-bar {
+    background: var(--aged);
+    height: 6px;
+    width: 80px;
+    display: inline-block;
+    vertical-align: middle;
+    position: relative;
+    overflow: hidden;
+  }
+  .progress-fill {
+    background: var(--rust);
+    height: 100%;
+    transition: width 0.4s;
+  }
+  .stars { color: var(--gold); font-size: 0.85rem; letter-spacing: -1px; }
+  .no-books {
+    text-align: center;
+    padding: 48px;
+    font-style: italic;
+    color: var(--paused);
+    font-size: 0.9rem;
+  }
+
+  /* Monthly summary */
+  .monthly-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1px;
+    background: var(--aged);
+    border: 2px solid var(--aged);
+    margin-bottom: 20px;
+  }
+  .monthly-cell {
+    background: var(--cream);
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .monthly-cell .mc-val { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 900; color: var(--rust); }
+  .monthly-cell .mc-lbl { font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; color: var(--paused); margin-top: 2px; }
+
+  /* modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,18,8,0.6);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--paper);
+    border: 3px solid var(--ink);
+    padding: 32px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 8px 8px 0 var(--ink);
+  }
+  .modal h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--aged);
+    padding-bottom: 10px;
+  }
+  .modal-actions { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+  .close-modal { float: right; cursor: pointer; font-size: 1.4rem; color: var(--paused); background: none; border: none; }
+
+  @media (max-width: 600px) {
+    .add-form { grid-template-columns: 1fr; }
+    .add-form .full { grid-column: 1; }
+    nav button { padding: 12px 16px; font-size: 0.9rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>The Reading League</h1>
+  <p class="subtitle">A Competitive Reading Tracker</p>
+</header>
+
+<nav id="main-nav">
+  <button class="active" data-tab="stats">League Table</button>
+  <button data-tab="ewan">Ewan</button>
+  <button data-tab="isaac">Isaac</button>
+  <button data-tab="ethan">Ethan</button>
+  <button data-tab="tony">Tony</button>
+</nav>
+
+<!-- STATS TAB -->
+<div id="tab-stats" class="tab-content active">
+  <div class="leaderboard">
+    <h2>— Monthly Standings —</h2>
+    <div id="leaderboard-list"></div>
+  </div>
+  <div class="stats-grid" id="stats-grid"></div>
+</div>
+
+<!-- USER TABS -->
+<div id="tab-ewan" class="tab-content"><div class="user-panel" data-user="Ewan"></div></div>
+<div id="tab-isaac" class="tab-content"><div class="user-panel" data-user="Isaac"></div></div>
+<div id="tab-ethan" class="tab-content"><div class="user-panel" data-user="Ethan"></div></div>
+<div id="tab-tony" class="tab-content"><div class="user-panel" data-user="Tony"></div></div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <button class="close-modal" id="close-edit">&times;</button>
+    <h3>Edit Book</h3>
+    <div id="edit-form-container"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="save-edit-btn">Save Changes</button>
+      <button class="btn btn-danger" id="delete-edit-btn">Delete Book</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Storage helpers ──────────────────────────────────────────────
+const STORE_KEY = 'reading_league_data';
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return null;
+}
+
+function saveData(data) {
+  localStorage.setItem(STORE_KEY, JSON.stringify(data));
+}
+
+// ── Seed data ────────────────────────────────────────────────────
+const SEED = {
+  Ewan: [
+    { id: uid(), dateStarted: '2026-03-13', dateFinished: '2026-03-13', title: 'The Hunting of The Snark', author: 'Lewis Carroll', pages: 25, totalPages: 25, type: 'Poetry', status: 'Completed', rating: null, reread: false, notes: '' },
+    { id: uid(), dateStarted: '2026-03-13', dateFinished: '', title: 'Shogun', author: 'James Clavell', pages: 40, totalPages: 1299, type: 'Novel', status: 'Current', rating: null, reread: false, notes: '' },
+    { id: uid(), dateStarted: '2026-03-14', dateFinished: '', title: 'Jane Eyre', author: 'Charlotte Bronte', pages: 164, totalPages: 596, type: 'Novel', status: 'Current', rating: null, reread: false, notes: '' },
+    { id: uid(), dateStarted: '2026-03-13', dateFinished: '2026-03-13', title: 'Three Sunsets', author: 'Lewis Carroll', pages: 4, totalPages: 4, type: 'Poetry', status: 'Completed', rating: null, reread: false, notes: '' },
+    { id: uid(), dateStarted: '2026-02-25', dateFinished: '', title: 'Treasure Island', author: 'Robert Louis Stevenson', pages: 48, totalPages: 135, type: 'Novel', status: 'Paused', rating: null, reread: false, notes: '' },
+  ],
+  Isaac: [
+    { id: uid(), dateStarted: '2026-03-01', dateFinished: '', title: 'Wool', author: 'Hugh Howey', pages: 320, totalPages: 584, type: 'Novel', status: 'Current', rating: null, reread: false, notes: '' },
+  ],
+  Ethan: [],
+  Tony: [],
+};
+
+function uid() {
+  return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+}
+
+// ── Init data ────────────────────────────────────────────────────
+let DB = loadData();
+if (!DB) {
+  DB = { Ewan: SEED.Ewan, Isaac: SEED.Isaac, Ethan: SEED.Ethan, Tony: SEED.Tony };
+  saveData(DB);
+}
+// Ensure all users exist
+['Ewan','Isaac','Ethan','Tony'].forEach(u => { if (!DB[u]) DB[u] = []; });
+
+// ── Helpers ──────────────────────────────────────────────────────
+function fmt(date) {
+  if (!date) return '—';
+  return date.split('-').slice(1).concat(date.split('-')[0]).join('/');
+}
+
+function stars(n) {
+  if (!n) return '—';
+  return '★'.repeat(Math.round(n)) + '☆'.repeat(5 - Math.round(n));
+}
+
+function thisMonth() {
+  const now = new Date();
+  return { y: now.getFullYear(), m: now.getMonth() };
+}
+
+function isThisMonth(dateStr) {
+  if (!dateStr) return false;
+  const d = new Date(dateStr);
+  const { y, m } = thisMonth();
+  return d.getFullYear() === y && d.getMonth() === m;
+}
+
+function userStats(user) {
+  const books = DB[user] || [];
+  const finished = books.filter(b => b.status === 'Completed');
+  const current = books.filter(b => b.status === 'Current');
+  const monthlyCompleted = books.filter(b => b.status === 'Completed' && isThisMonth(b.dateFinished));
+  const monthlyPages = monthlyCompleted.reduce((s, b) => s + (b.pages || 0), 0);
+  const allPages = books.reduce((s, b) => s + (b.pages || 0), 0);
+  const ratings = books.filter(b => b.rating).map(b => +b.rating);
+  const avgRating = ratings.length ? (ratings.reduce((a,b) => a+b, 0) / ratings.length).toFixed(1) : '—';
+  const byType = {};
+  ['Novel','Short Story','Poetry','Play'].forEach(t => {
+    byType[t] = books.filter(b => b.type === t).length;
+  });
+  return { books, finished, current, monthlyCompleted, monthlyPages, allPages, avgRating, byType };
+}
+
+// ── Render Stats Tab ─────────────────────────────────────────────
+function renderStats() {
+  const users = ['Ewan','Isaac','Ethan','Tony'];
+
+  // Leaderboard by monthly pages
+  const ranked = users.map(u => {
+    const s = userStats(u);
+    return { u, monthlyPages: s.monthlyPages, monthlyBooks: s.monthlyCompleted.length };
+  }).sort((a,b) => b.monthlyPages - a.monthlyPages || b.monthlyBooks - a.monthlyBooks);
+
+  const rankSymbols = ['first','second','third',''];
+  document.getElementById('leaderboard-list').innerHTML = ranked.map((r, i) => `
+    <div class="lb-row">
+      <span class="lb-rank ${rankSymbols[i]}">${i+1}</span>
+      <span class="lb-name">${r.u}</span>
+      <span class="lb-stat"><strong>${r.monthlyBooks}</strong>books this month</span>
+      <span class="lb-stat"><strong>${r.monthlyPages}</strong>pages this month</span>
+    </div>
+  `).join('');
+
+  // Per-reader cards
+  document.getElementById('stats-grid').innerHTML = users.map(u => {
+    const s = userStats(u);
+    const currTitles = s.current.map(b => `<span class="current-book-tag">${b.title}</span>`).join('') || '<em style="color:var(--paused);font-size:.8rem">Nothing current</em>';
+    return `
+    <div class="reader-card">
+      <h3>${u}</h3>
+      <div class="stat-row"><span>Total Started</span><span class="stat-val">${s.books.length}</span></div>
+      <div class="stat-row"><span>Completed</span><span class="stat-val">${s.finished.length}</span></div>
+      <div class="stat-row"><span>Pages Read</span><span class="stat-val">${s.allPages.toLocaleString()}</span></div>
+      <div class="stat-row"><span>Novels</span><span class="stat-val">${s.byType['Novel']}</span></div>
+      <div class="stat-row"><span>Poetry</span><span class="stat-val">${s.byType['Poetry']}</span></div>
+      <div class="stat-row"><span>Short Stories</span><span class="stat-val">${s.byType['Short Story']}</span></div>
+      <div class="stat-row"><span>Plays</span><span class="stat-val">${s.byType['Play']}</span></div>
+      <div class="stat-row"><span>Avg Rating</span><span class="stat-val">${s.avgRating !== '—' ? '★ ' + s.avgRating : '—'}</span></div>
+      <div class="current-books">
+        <div style="font-size:.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--paused);margin-bottom:6px">Currently Reading</div>
+        ${currTitles}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Render User Tab ──────────────────────────────────────────────
+function renderUserTab(user) {
+  const panel = document.querySelector(`#tab-${user.toLowerCase()} .user-panel`);
+  const s = userStats(user);
+  const books = s.books;
+
+  // Monthly summary
+  const mcomp = s.monthlyCompleted.length;
+  const mpages = s.monthlyPages;
+  const avgPages = books.length ? Math.round(s.allPages / books.length) : 0;
+
+  panel.innerHTML = `
+    <div class="section-title">— This Month —</div>
+    <div class="monthly-strip">
+      <div class="monthly-cell"><div class="mc-val">${mcomp}</div><div class="mc-lbl">Completed</div></div>
+      <div class="monthly-cell"><div class="mc-val">${mpages}</div><div class="mc-lbl">Pages Read</div></div>
+      <div class="monthly-cell"><div class="mc-val">${s.finished.length}</div><div class="mc-lbl">Total Finished</div></div>
+      <div class="monthly-cell"><div class="mc-val">${s.books.length}</div><div class="mc-lbl">Total Books</div></div>
+      <div class="monthly-cell"><div class="mc-val">${avgPages}</div><div class="mc-lbl">Avg Pages</div></div>
+    </div>
+
+    <div class="section-title">— Add a Book —</div>
+    <div class="add-form" id="form-${user}">
+      <div class="field-group"><label>Title *</label><input type="text" id="${user}-title" placeholder="Book title"></div>
+      <div class="field-group"><label>Author *</label><input type="text" id="${user}-author" placeholder="Author name"></div>
+      <div class="field-group"><label>Pages Read</label><input type="number" id="${user}-pages" placeholder="0" min="0"></div>
+      <div class="field-group"><label>Total Pages</label><input type="number" id="${user}-totalPages" placeholder="0" min="0"></div>
+      <div class="field-group"><label>Type</label>
+        <select id="${user}-type">
+          <option>Novel</option><option>Short Story</option><option>Poetry</option><option>Play</option>
+        </select>
+      </div>
+      <div class="field-group"><label>Status</label>
+        <select id="${user}-status">
+          <option>Current</option><option>Completed</option><option>Paused</option>
+        </select>
+      </div>
+      <div class="field-group"><label>Date Started</label><input type="date" id="${user}-dateStarted"></div>
+      <div class="field-group"><label>Date Finished</label><input type="date" id="${user}-dateFinished"></div>
+      <div class="field-group"><label>Rating (1–5)</label>
+        <select id="${user}-rating"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+      </div>
+      <div class="field-group"><label>Reread?</label>
+        <select id="${user}-reread"><option value="false">No</option><option value="true">Yes</option></select>
+      </div>
+      <div class="field-group full"><label>Notes</label><input type="text" id="${user}-notes" placeholder="Optional notes..."></div>
+      <div class="full"><button class="btn btn-primary" onclick="addBook('${user}')">Add to List</button></div>
+    </div>
+
+    <div class="section-title">— Reading List —</div>
+    <div class="book-table-wrap">
+      ${books.length === 0
+        ? `<div class="no-books">No books recorded yet. Add your first one above.</div>`
+        : `<table>
+          <thead><tr>
+            <th>Title</th><th>Author</th><th>Type</th><th>Status</th>
+            <th>Progress</th><th>Rating</th><th>Started</th><th>Finished</th><th></th>
+          </tr></thead>
+          <tbody>
+          ${books.map(b => {
+            const pct = b.totalPages > 0 ? Math.min(100, Math.round((b.pages / b.totalPages) * 100)) : 0;
+            return `<tr>
+              <td><strong>${b.title}</strong>${b.reread === true || b.reread === 'true' ? ' <span title="Reread" style="color:var(--gold)">↺</span>' : ''}</td>
+              <td>${b.author}</td>
+              <td>${b.type}</td>
+              <td><span class="status-badge status-${b.status}">${b.status}</span></td>
+              <td>
+                <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+                <span style="font-size:.75rem;margin-left:6px;color:var(--paused)">${b.pages}/${b.totalPages || '?'}</span>
+              </td>
+              <td><span class="stars">${stars(b.rating)}</span></td>
+              <td>${fmt(b.dateStarted)}</td>
+              <td>${fmt(b.dateFinished)}</td>
+              <td><button class="btn btn-danger" onclick="openEdit('${user}','${b.id}')">Edit</button></td>
+            </tr>`;
+          }).join('')}
+          </tbody>
+        </table>`
+      }
+    </div>
+  `;
+}
+
+// ── Add Book ─────────────────────────────────────────────────────
+function addBook(user) {
+  const g = id => document.getElementById(`${user}-${id}`)?.value.trim();
+  const title = g('title');
+  const author = g('author');
+  if (!title || !author) { alert('Title and Author are required.'); return; }
+
+  const book = {
+    id: uid(),
+    dateStarted: g('dateStarted') || '',
+    dateFinished: g('dateFinished') || '',
+    title, author,
+    pages: parseInt(g('pages')) || 0,
+    totalPages: parseInt(g('totalPages')) || 0,
+    type: g('type') || 'Novel',
+    status: g('status') || 'Current',
+    rating: g('rating') || null,
+    reread: g('reread') === 'true',
+    notes: g('notes') || '',
+  };
+  DB[user].unshift(book);
+  saveData(DB);
+  renderAll();
+}
+
+// ── Edit Modal ───────────────────────────────────────────────────
+let editCtx = null;
+
+function openEdit(user, bookId) {
+  const book = DB[user].find(b => b.id === bookId);
+  if (!book) return;
+  editCtx = { user, bookId };
+
+  const c = document.getElementById('edit-form-container');
+  c.innerHTML = `
+    <div class="add-form" style="border:none;padding:0;background:none;">
+      <div class="field-group"><label>Title</label><input type="text" id="edit-title" value="${escHtml(book.title)}"></div>
+      <div class="field-group"><label>Author</label><input type="text" id="edit-author" value="${escHtml(book.author)}"></div>
+      <div class="field-group"><label>Pages Read</label><input type="number" id="edit-pages" value="${book.pages}"></div>
+      <div class="field-group"><label>Total Pages</label><input type="number" id="edit-totalPages" value="${book.totalPages}"></div>
+      <div class="field-group"><label>Type</label>
+        <select id="edit-type">${['Novel','Short Story','Poetry','Play'].map(t => `<option${book.type===t?' selected':''}>${t}</option>`).join('')}</select>
+      </div>
+      <div class="field-group"><label>Status</label>
+        <select id="edit-status">${['Current','Completed','Paused'].map(s => `<option${book.status===s?' selected':''}>${s}</option>`).join('')}</select>
+      </div>
+      <div class="field-group"><label>Date Started</label><input type="date" id="edit-dateStarted" value="${book.dateStarted || ''}"></div>
+      <div class="field-group"><label>Date Finished</label><input type="date" id="edit-dateFinished" value="${book.dateFinished || ''}"></div>
+      <div class="field-group"><label>Rating</label>
+        <select id="edit-rating"><option value="">—</option>${[1,2,3,4,5].map(n => `<option${+book.rating===n?' selected':''}>${n}</option>`).join('')}</select>
+      </div>
+      <div class="field-group"><label>Reread?</label>
+        <select id="edit-reread"><option value="false"${!book.reread?' selected':''}>No</option><option value="true"${book.reread?' selected':''}>Yes</option></select>
+      </div>
+      <div class="field-group full"><label>Notes</label><input type="text" id="edit-notes" value="${escHtml(book.notes || '')}"></div>
+    </div>`;
+
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+function escHtml(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+document.getElementById('save-edit-btn').onclick = () => {
+  if (!editCtx) return;
+  const { user, bookId } = editCtx;
+  const idx = DB[user].findIndex(b => b.id === bookId);
+  if (idx < 0) return;
+  const g = id => document.getElementById(`edit-${id}`)?.value.trim();
+  DB[user][idx] = {
+    ...DB[user][idx],
+    title: g('title'), author: g('author'),
+    pages: parseInt(g('pages')) || 0,
+    totalPages: parseInt(g('totalPages')) || 0,
+    type: g('type'), status: g('status'),
+    dateStarted: g('dateStarted') || '',
+    dateFinished: g('dateFinished') || '',
+    rating: g('rating') || null,
+    reread: g('reread') === 'true',
+    notes: g('notes') || '',
+  };
+  saveData(DB);
+  closeModal();
+  renderAll();
+};
+
+document.getElementById('delete-edit-btn').onclick = () => {
+  if (!editCtx) return;
+  if (!confirm('Delete this book? This cannot be undone.')) return;
+  const { user, bookId } = editCtx;
+  DB[user] = DB[user].filter(b => b.id !== bookId);
+  saveData(DB);
+  closeModal();
+  renderAll();
+};
+
+function closeModal() {
+  document.getElementById('edit-modal').classList.remove('open');
+  editCtx = null;
+}
+document.getElementById('close-edit').onclick = closeModal;
+document.getElementById('edit-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+// ── Navigation ───────────────────────────────────────────────────
+document.querySelectorAll('#main-nav button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#main-nav button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.dataset.tab;
+    document.getElementById(`tab-${tab}`).classList.add('active');
+    if (tab !== 'stats') renderUserTab(tab.charAt(0).toUpperCase() + tab.slice(1));
+  });
+});
+
+// ── Render All ───────────────────────────────────────────────────
+function renderAll() {
+  renderStats();
+  // Re-render any user tab that is currently visible
+  document.querySelectorAll('.tab-content.active .user-panel').forEach(panel => {
+    const user = panel.dataset.user;
+    if (user) renderUserTab(user);
+  });
+}
+
+// ── Boot ─────────────────────────────────────────────────────────
+renderAll();
+</script>
+</body>
+</html>
