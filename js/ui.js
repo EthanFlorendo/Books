@@ -49,7 +49,6 @@ export function renderStats() {
 export function renderUserTab(user) {
   const panel = document.querySelector(`#tab-${user.toLowerCase()} .user-panel`);
   const s = userStats(user);
-  const avgPages = s.books.length ? Math.round(s.allPages / s.books.length) : 0;
 
   panel.innerHTML = `
     <div class="section-title">— This Month —</div>
@@ -58,7 +57,6 @@ export function renderUserTab(user) {
       <div class="monthly-cell"><div class="mc-val">${s.monthlyPages}</div><div class="mc-lbl">Pages Read</div></div>
       <div class="monthly-cell"><div class="mc-val">${s.finished.length}</div><div class="mc-lbl">Total Finished</div></div>
       <div class="monthly-cell"><div class="mc-val">${s.books.length}</div><div class="mc-lbl">Total Books</div></div>
-      <div class="monthly-cell"><div class="mc-val">${avgPages}</div><div class="mc-lbl">Avg Pages</div></div>
     </div>
 
     <div class="add-form-toggle" id="${user}-toggle">

@@ -4,6 +4,13 @@ export function fmt(dateStr) {
   return `${m}/${d}/${y}`;
 }
 
+function parseDateOnly(dateStr) {
+  if (!dateStr) return null;
+  const [year, month, day] = dateStr.split('-').map(Number);
+  if (!year || !month || !day) return null;
+  return new Date(year, month - 1, day);
+}
+
 export function stars(n) {
   if (!n) return '—';
   return '★'.repeat(Math.round(n)) + '☆'.repeat(5 - Math.round(n));
@@ -20,7 +27,8 @@ export function esc(str) {
 export function isThisMonth(dateStr) {
   if (!dateStr) return false;
   const now = new Date();
-  const dt = new Date(dateStr);
+  const dt = parseDateOnly(dateStr);
+  if (!dt) return false;
   return dt.getFullYear() === now.getFullYear() && dt.getMonth() === now.getMonth();
 }
 
