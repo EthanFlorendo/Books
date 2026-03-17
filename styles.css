@@ -795,6 +795,22 @@ body:has(#tab-tony.active) nav button[data-tab="tony"].active {
   overflow: hidden;
 }
 
+.monthly-strip + .add-form-toggle {
+  margin-top: 30px;
+}
+
+.monthly-strip + .add-form-toggle::after {
+  content: "";
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: -16px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--theme-line-strong), transparent);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
 .add-form-toggle:hover {
   transform: translateY(-2px);
   border-color: var(--theme-line-strong);
