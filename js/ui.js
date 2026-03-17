@@ -5,6 +5,12 @@ import { esc, fmt, stars } from './utils.js';
 import { fetchBookDetails, fetchMissingCovers, hideDropdown, onBookSearch } from './openLibrary.js';
 import { addBook, openEdit } from './books.js';
 
+const STATUS_SORT_ORDER = {
+  Completed: 3,
+  Current: 2,
+  Paused: 1,
+};
+
 export function renderStats() {
   const ranked = USERS
     .map(user => {
@@ -49,6 +55,8 @@ export function renderStats() {
 export function renderUserTab(user) {
   const panel = document.querySelector(`#tab-${user.toLowerCase()} .user-panel`);
   const s = userStats(user);
+  const sortBy = state.sorts[user] || 'date';
+  const sortedBooks = [...s.books].sort((a, b) => compareBooks(a, b, sortBy));
 
   panel.innerHTML = `
     <div class="section-title">— This Month —</div>
@@ -87,6 +95,17 @@ export function renderUserTab(user) {
     </div>
 
     <div class="section-title">— Reading List —</div>
+    <div class="list-toolbar">
+      <label class="sort-control" for="${user}-sort">
+        <span>Sort By</span>
+        <select id="${user}-sort">
+          <option value="date" ${sortBy === 'date' ? 'selected' : ''}>Date</option>
+          <option value="rating" ${sortBy === 'rating' ? 'selected' : ''}>Rating</option>
+          <option value="author" ${sortBy === 'author' ? 'selected' : ''}>Author</option>
+          <option value="completion" ${sortBy === 'completion' ? 'selected' : ''}>Completion</option>
+        </select>
+      </label>
+    </div>
     <div class="book-table-wrap">
       ${s.books.length === 0
         ? '<div class="no-books">No books recorded yet.</div>'
@@ -97,7 +116,7 @@ export function renderUserTab(user) {
               </tr>
             </thead>
             <tbody>
-              ${s.books.map(book => renderBookRow(user, book)).join('')}
+              ${sortedBooks.map(book => renderBookRow(user, book)).join('')}
             </tbody>
           </table>`}
     </div>`;
@@ -128,6 +147,59 @@ function renderBookRow(user, book) {
     </tr>`;
 }
 
+function compareBooks(a, b, sortBy) {
+  switch (sortBy) {
+    case 'rating':
+      return compareNumbers(b.rating, a.rating)
+        || compareStrings(a.author, b.author)
+        || compareStrings(a.title, b.title);
+    case 'author':
+      return compareStrings(a.author, b.author)
+        || compareStrings(a.title, b.title)
+        || compareDates(getBookSortDate(b), getBookSortDate(a));
+    case 'completion':
+      return compareNumbers(getCompletionRank(b), getCompletionRank(a))
+        || compareNumbers(getCompletionPercent(b), getCompletionPercent(a))
+        || compareStrings(a.title, b.title);
+    case 'date':
+    default:
+      return compareDates(getBookSortDate(b), getBookSortDate(a))
+        || compareStrings(a.title, b.title);
+  }
+}
+
+function compareStrings(a = '', b = '') {
+  return String(a).localeCompare(String(b), undefined, { sensitivity: 'base' });
+}
+
+function compareNumbers(a, b) {
+  return (Number(a) || 0) - (Number(b) || 0);
+}
+
+function compareDates(a, b) {
+  return getTimeValue(a) - getTimeValue(b);
+}
+
+function getTimeValue(value) {
+  if (!value) return 0;
+  const time = new Date(value).getTime();
+  return Number.isNaN(time) ? 0 : time;
+}
+
+function getBookSortDate(book) {
+  return book.date_finished || book.date_started || book.created_at || '';
+}
+
+function getCompletionRank(book) {
+  return STATUS_SORT_ORDER[book.status] || 0;
+}
+
+function getCompletionPercent(book) {
+  if (book.status === 'Completed') return 100;
+  if (!book.total_pages) return 0;
+  return Math.min(100, Math.round(((book.pages || 0) / book.total_pages) * 100));
+}
+
 function bindUserTabEvents(user) {
   const toggle = document.getElementById(`${user}-toggle`);
   const body = document.getElementById(`${user}-form-body`);
@@ -141,6 +213,10 @@ function bindUserTabEvents(user) {
   searchInput.addEventListener('blur', () => hideDropdown(user));
 
   document.getElementById(`${user}-add-btn`).addEventListener('click', () => addBook(user));
+  document.getElementById(`${user}-sort`).addEventListener('change', event => {
+    state.sorts[user] = event.target.value;
+    renderUserTab(user);
+  });
 
   panelScopedQuery(user, '[data-book-row]').forEach(row => {
     row.addEventListener('click', event => {

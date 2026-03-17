@@ -7,4 +7,5 @@ export const state = {
   editCtx: null,
   searchTimers: {},
   selectedCover: {},
+  sorts: Object.fromEntries(USERS.map(user => [user, 'date'])),
 };
