@@ -4,6 +4,7 @@ import { userStats } from './data.js';
 import { esc, fmt, stars } from './utils.js';
 import { fetchBookDetails, fetchMissingCovers, hideDropdown, onBookSearch } from './openLibrary.js';
 import { addBook, openEdit } from './books.js';
+import { canEditUser, currentAccessLabel, isSignedIn } from './auth.js';
 
 const STATUS_SORT_ORDER = {
   Completed: 3,
@@ -57,9 +58,13 @@ export function renderUserTab(user) {
   const s = userStats(user);
   const sortBy = state.sorts[user] || 'date';
   const sortedBooks = [...s.books].sort((a, b) => compareBooks(a, b, sortBy));
+  const canEdit = canEditUser(user);
+  const authPrompt = isSignedIn()
+    ? `Signed in as ${esc(state.user?.email || '')}. You can edit ${canEdit ? 'this page' : 'only your assigned page'}.`
+    : 'Sign in to edit your page.';
 
   panel.innerHTML = `
-    <div class="section-title">— This Month —</div>
+    <div class="section-title">This Month</div>
     <div class="monthly-strip">
       <div class="monthly-cell"><div class="mc-val">${s.monthlyCompleted.length}</div><div class="mc-lbl">Completed</div></div>
       <div class="monthly-cell"><div class="mc-val">${s.monthlyPages}</div><div class="mc-lbl">Pages Read</div></div>
@@ -68,33 +73,34 @@ export function renderUserTab(user) {
     </div>
 
     <div class="add-form-toggle" id="${user}-toggle">
-      <span>＋ Add a Book</span>
+      <span>${canEdit ? 'Add a Book' : 'Read Only Access'}</span>
       <span class="toggle-arrow">▼</span>
     </div>
     <div class="add-form-body" id="${user}-form-body">
+      <div class="access-note">${authPrompt}</div>
       <div class="search-wrap">
         <span class="search-icon">🔍</span>
-        <input type="text" id="${user}-search" placeholder="Search by title or author to autofill…" autocomplete="off">
+        <input type="text" id="${user}-search" placeholder="Search by title or author to autofill..." autocomplete="off" ${canEdit ? '' : 'disabled'}>
         <div class="search-results" id="${user}-search-results" style="display:none"></div>
       </div>
-      <div class="search-hint">Type to search Open Library — click a result to autofill fields below</div>
+      <div class="search-hint">Type to search Open Library and click a result to autofill fields below</div>
       <div class="form-grid">
-        <div class="field-group two"><label>Title *</label><input type="text" id="${user}-title" placeholder="Book title"></div>
-        <div class="field-group"><label>Author *</label><input type="text" id="${user}-author" placeholder="Author"></div>
-        <div class="field-group"><label>Pages Read</label><input type="number" id="${user}-pages" placeholder="0" min="0"></div>
-        <div class="field-group"><label>Total Pages</label><input type="number" id="${user}-totalPages" placeholder="0" min="0"></div>
-        <div class="field-group"><label>Type</label><select id="${user}-type"><option>Novel</option><option>Short Story</option><option>Poetry</option><option>Play</option></select></div>
-        <div class="field-group"><label>Status</label><select id="${user}-status"><option>Current</option><option>Completed</option><option>Paused</option></select></div>
-        <div class="field-group"><label>Date Started</label><input type="date" id="${user}-dateStarted"></div>
-        <div class="field-group"><label>Date Finished</label><input type="date" id="${user}-dateFinished"></div>
-        <div class="field-group"><label>Rating</label><select id="${user}-rating"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
-        <div class="field-group"><label>Reread?</label><select id="${user}-reread"><option value="false">No</option><option value="true">Yes</option></select></div>
-        <div class="field-group two"><label>Notes</label><input type="text" id="${user}-notes" placeholder="Optional…"></div>
-        <div class="full" style="margin-top:4px"><button class="btn btn-primary" id="${user}-add-btn">Add to List</button></div>
+        <div class="field-group two"><label>Title *</label><input type="text" id="${user}-title" placeholder="Book title" ${canEdit ? '' : 'disabled'}></div>
+        <div class="field-group"><label>Author *</label><input type="text" id="${user}-author" placeholder="Author" ${canEdit ? '' : 'disabled'}></div>
+        <div class="field-group"><label>Pages Read</label><input type="number" id="${user}-pages" placeholder="0" min="0" ${canEdit ? '' : 'disabled'}></div>
+        <div class="field-group"><label>Total Pages</label><input type="number" id="${user}-totalPages" placeholder="0" min="0" ${canEdit ? '' : 'disabled'}></div>
+        <div class="field-group"><label>Type</label><select id="${user}-type" ${canEdit ? '' : 'disabled'}><option>Novel</option><option>Short Story</option><option>Poetry</option><option>Play</option></select></div>
+        <div class="field-group"><label>Status</label><select id="${user}-status" ${canEdit ? '' : 'disabled'}><option>Current</option><option>Completed</option><option>Paused</option></select></div>
+        <div class="field-group"><label>Date Started</label><input type="date" id="${user}-dateStarted" ${canEdit ? '' : 'disabled'}></div>
+        <div class="field-group"><label>Date Finished</label><input type="date" id="${user}-dateFinished" ${canEdit ? '' : 'disabled'}></div>
+        <div class="field-group"><label>Rating</label><select id="${user}-rating" ${canEdit ? '' : 'disabled'}><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+        <div class="field-group"><label>Reread?</label><select id="${user}-reread" ${canEdit ? '' : 'disabled'}><option value="false">No</option><option value="true">Yes</option></select></div>
+        <div class="field-group two"><label>Notes</label><input type="text" id="${user}-notes" placeholder="Optional..." ${canEdit ? '' : 'disabled'}></div>
+        <div class="full" style="margin-top:4px"><button class="btn btn-primary" id="${user}-add-btn" ${canEdit ? '' : 'disabled'}>${canEdit ? 'Add to List' : 'Editing Locked'}</button></div>
       </div>
     </div>
 
-    <div class="section-title">— Reading List —</div>
+    <div class="section-title">Reading List</div>
     <div class="list-toolbar">
       <label class="sort-control" for="${user}-sort">
         <span>Sort By</span>
@@ -128,6 +134,9 @@ export function renderUserTab(user) {
 function renderBookRow(user, book) {
   const pct = book.total_pages > 0 ? Math.min(100, Math.round((book.pages / book.total_pages) * 100)) : 0;
   const coverHtml = `<div class="book-cover-placeholder" data-fetch="${esc(book.title)}" data-id="${book.id}">📖</div>`;
+  const editButton = canEditUser(user)
+    ? `<button class="btn btn-danger" data-edit-book="${book.id}" data-user="${user}">Edit</button>`
+    : '';
 
   return `
     <tr class="clickable-row" data-book-row data-user="${user}" data-book-id="${book.id}">
@@ -143,7 +152,7 @@ function renderBookRow(user, book) {
       <td class="padded"><span class="stars">${stars(book.rating)}</span></td>
       <td class="padded">${fmt(book.date_started)}</td>
       <td class="padded">${fmt(book.date_finished)}</td>
-      <td class="padded"><button class="btn btn-danger" data-edit-book="${book.id}" data-user="${user}">Edit</button></td>
+      <td class="padded">${editButton}</td>
     </tr>`;
 }
 
@@ -209,10 +218,16 @@ function bindUserTabEvents(user) {
   });
 
   const searchInput = document.getElementById(`${user}-search`);
-  searchInput.addEventListener('input', () => onBookSearch(user));
-  searchInput.addEventListener('blur', () => hideDropdown(user));
+  if (!searchInput.disabled) {
+    searchInput.addEventListener('input', () => onBookSearch(user));
+    searchInput.addEventListener('blur', () => hideDropdown(user));
+  }
 
-  document.getElementById(`${user}-add-btn`).addEventListener('click', () => addBook(user));
+  const addButton = document.getElementById(`${user}-add-btn`);
+  if (!addButton.disabled) {
+    addButton.addEventListener('click', () => addBook(user));
+  }
+
   document.getElementById(`${user}-sort`).addEventListener('change', event => {
     state.sorts[user] = event.target.value;
     renderUserTab(user);
@@ -260,9 +275,9 @@ export async function openBookDetail(user, bookId) {
   const started = book.date_started ? `<span><strong>Started</strong> ${fmt(book.date_started)}</span>` : '';
   const finished = book.date_finished ? `<span><strong>Finished</strong> ${fmt(book.date_finished)}</span>` : '';
   document.getElementById('bm-dates').innerHTML = started + finished;
-  document.getElementById('bm-notes').innerHTML = book.notes ? `<div class="book-modal-notes">📝 ${esc(book.notes)}</div>` : '';
-  document.getElementById('bm-cover-wrap').innerHTML = '<div class="book-modal-cover-loading">Loading cover…</div>';
-  document.getElementById('bm-desc').textContent = 'Fetching description…';
+  document.getElementById('bm-notes').innerHTML = book.notes ? `<div class="book-modal-notes">Notes: ${esc(book.notes)}</div>` : '';
+  document.getElementById('bm-cover-wrap').innerHTML = '<div class="book-modal-cover-loading">Loading cover...</div>';
+  document.getElementById('bm-desc').textContent = 'Fetching description...';
   document.getElementById('bm-desc').className = 'book-modal-desc loading';
   document.getElementById('bm-ol-meta').innerHTML = '';
 
@@ -305,8 +320,30 @@ export function closeBookModal() {
 }
 
 export function renderAll() {
+  renderAuthStatus();
   renderStats();
   document.querySelectorAll('.tab-content.active .user-panel').forEach(panel => {
     if (panel.dataset.user) renderUserTab(panel.dataset.user);
   });
+}
+
+export function renderAuthStatus() {
+  const status = document.getElementById('auth-status');
+  if (!status) return;
+
+  const email = document.getElementById('auth-email');
+  const password = document.getElementById('auth-password');
+  const loginBtn = document.getElementById('auth-login-btn');
+  const logoutBtn = document.getElementById('auth-logout-btn');
+  const userLabel = document.getElementById('auth-user');
+  const roleLabel = document.getElementById('auth-role');
+  const signedIn = isSignedIn();
+
+  status.classList.toggle('signed-in', signedIn);
+  userLabel.textContent = signedIn ? (state.user?.email || 'Signed in') : 'Read-only mode';
+  roleLabel.textContent = signedIn ? currentAccessLabel() : 'Sign in to edit';
+  email.disabled = signedIn;
+  password.disabled = signedIn;
+  loginBtn.disabled = signedIn;
+  logoutBtn.hidden = !signedIn;
 }

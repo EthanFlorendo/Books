@@ -17,6 +17,19 @@
   <header>
     <h1>The Reading League</h1>
     <p class="subtitle">A Competitive Reading Tracker</p>
+    <div class="auth-panel" id="auth-status">
+      <div class="auth-copy">
+        <div class="auth-kicker">Editor Access</div>
+        <div class="auth-user" id="auth-user">Read-only mode</div>
+        <div class="auth-role" id="auth-role">Sign in to edit</div>
+      </div>
+      <div class="auth-fields">
+        <input type="email" id="auth-email" placeholder="email" />
+        <input type="password" id="auth-password" placeholder="password" />
+        <button class="btn btn-primary" id="auth-login-btn">Sign In</button>
+        <button class="btn btn-danger" id="auth-logout-btn" hidden>Sign Out</button>
+      </div>
+    </div>
   </header>
 
   <nav id="main-nav">
