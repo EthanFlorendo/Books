@@ -15,6 +15,11 @@ export function parseInteger(value) {
   return Number.isNaN(parsedValue) ? 0 : parsedValue;
 }
 
+export function renderSelectOptions(values, selectedValue, includeEmptyOption = false) {
+  const options = values.map(value => `<option${value === selectedValue ? ' selected' : ''}>${value}</option>`).join('');
+  return includeEmptyOption ? `<option value="">-</option>${options}` : options;
+}
+
 export function compareStrings(a = '', b = '') {
   return String(a).localeCompare(String(b), undefined, { sensitivity: 'base' });
 }

@@ -4,9 +4,9 @@ import { initializeSupabaseClient } from './services/supabaseClient.js';
 import { getAppState, setActiveTab, setBooksByReader, setReaderSort, toggleReaderFormOpen } from './state/appState.js';
 import { DEFAULT_TAB, READERS } from './utils/constants.js';
 import { toTabKey } from './utils/helpers.js';
-import { bindAdminShellEvents, closeEditModal, handleSearchInput, hideSearchResults, openEditModal, renderAdminPage, saveNewBookForReader, setAdminPageHandlers } from './pages/admin/index.js';
+import { bindAdminShellEvents, closeEditModal, handleSearchInput, hideSearchResults, openEditModal, renderAdminPage, saveNewBookForReader, setAdminPageHandlers } from './pages/admin/AdminPage.js';
 import { bindShellModalDismissals, bindHomeNavigation, mountHomePage, setLoadingVisible, showActiveTab } from './pages/home/index.js';
-import { closeBookDetailModal, renderLeaderboardPage, renderReaderPage, setLeaderboardPageHandlers } from './pages/leaderboard/index.js';
+import { closeBookDetailModal, renderLeaderboardPage, renderReaderPage, setLeaderboardPageHandlers } from './pages/leaderboard/LeaderboardPage.js';
 
 function getReaderFromTab(tab) {
   return READERS.find(reader => toTabKey(reader) === tab) || null;

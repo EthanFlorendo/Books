@@ -36,10 +36,6 @@ export function setBooksByReader(booksByReader) {
   appState.booksByReader = booksByReader;
 }
 
-export function resetBooksByReader() {
-  appState.booksByReader = createEmptyBooksByReader();
-}
-
 export function setAdminStatus(isAdmin) {
   appState.isAdmin = Boolean(isAdmin);
 }

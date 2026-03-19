@@ -5,7 +5,7 @@ import { ensureAdminAccess } from '../../services/authService.js';
 import { addBook, deleteBook, getBookById, updateBook } from '../../services/booksService.js';
 import { searchOpenLibrary, validateLiterature } from '../../services/openLibraryService.js';
 import { BOOK_STATUSES, BOOK_TYPES } from '../../utils/constants.js';
-import { escapeHtml, parseInteger } from '../../utils/helpers.js';
+import { escapeHtml, parseInteger, renderSelectOptions } from '../../utils/helpers.js';
 
 let adminHandlers = {
   onToggleAdmin: async () => {},
@@ -183,11 +183,6 @@ export async function saveNewBookForReader(reader) {
   }
 }
 
-function renderSelectOptions(values, selectedValue, includeEmptyOption = false) {
-  const options = values.map(value => `<option${value === selectedValue ? ' selected' : ''}>${value}</option>`).join('');
-  return includeEmptyOption ? `<option value="">-</option>${options}` : options;
-}
-
 function renderEditFormMarkup(book) {
   return `
     <div class="edit-form-grid">
@@ -260,7 +255,7 @@ export function closeEditModal() {
   clearEditSession();
 }
 
-export async function saveEditChanges() {
+async function saveEditChanges() {
   if (!(await ensureAdminAccess('save edits'))) return false;
 
   const { editSession } = getAppState();
@@ -277,7 +272,7 @@ export async function saveEditChanges() {
   }
 }
 
-export async function deleteCurrentEdit() {
+async function deleteCurrentEdit() {
   if (!(await ensureAdminAccess('delete books'))) return false;
 
   const { editSession } = getAppState();

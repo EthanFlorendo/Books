@@ -13,7 +13,7 @@ export function renderBookCardRow({ reader, book, isAdmin }) {
   return `
     <tr class="clickable-row" data-book-row data-reader="${reader}" data-book-id="${book.id}">
       <td class="cover-cell">
-        <div class="book-cover-placeholder" data-fetch="${escapeHtml(book.title)}" data-id="${book.id}">Book</div>
+        <div class="book-cover-placeholder" data-fetch="${escapeHtml(book.title)}">Book</div>
       </td>
       <td class="padded">
         <strong>${escapeHtml(book.title)}</strong>

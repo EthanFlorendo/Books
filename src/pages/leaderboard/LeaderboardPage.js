@@ -115,7 +115,7 @@ async function hydrateMissingBookCovers(scopeElement) {
   }
 }
 
-export async function openBookDetail(reader, bookId) {
+async function openBookDetail(reader, bookId) {
   const { booksByReader } = getAppState();
   const book = getBookById(booksByReader, reader, bookId);
 

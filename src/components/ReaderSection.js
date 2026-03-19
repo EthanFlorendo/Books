@@ -1,11 +1,7 @@
 import { BOOK_STATUSES, BOOK_TYPES, SORT_OPTIONS } from '../utils/constants.js';
+import { renderSelectOptions } from '../utils/helpers.js';
 import { renderBookCardRow } from './BookCard.js';
 import { renderSearchBar } from './SearchBar.js';
-
-function renderSelectOptions(values, selectedValue, includeEmptyOption = false) {
-  const options = values.map(value => `<option${value === selectedValue ? ' selected' : ''}>${value}</option>`).join('');
-  return includeEmptyOption ? `<option value="">-</option>${options}` : options;
-}
 
 function renderAdminForm(reader, isAdmin) {
   if (!isAdmin) {
