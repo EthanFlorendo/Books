@@ -80,7 +80,7 @@ body {
     radial-gradient(circle at 20% 20%, rgba(125, 211, 252, 0.12), transparent 22%),
     linear-gradient(180deg, #171d25 0%, #0f0f12 55%, #12161d 100%);
   color: var(--ink);
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   overflow-x: hidden;
 }
 
@@ -122,7 +122,7 @@ body::after {
   background: rgba(10, 12, 16, 0.8);
   backdrop-filter: blur(8px);
   color: var(--mist);
-  font-family: 'Cinzel', 'Playfair Display', serif;
+  font-family: Georgia, "Times New Roman", Times, serif;
   font-size: 1.05rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -167,7 +167,7 @@ header::after {
 }
 
 h1 {
-  font-family: 'Cinzel', 'Playfair Display', serif;
+  font-family: Georgia, "Times New Roman", Times, serif;
   font-size: clamp(2.4rem, 5vw, 4.8rem);
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -213,7 +213,7 @@ nav button {
     linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
     rgba(42, 47, 54, 0.5);
   color: var(--mist-dim);
-  font-family: 'Cinzel', 'Playfair Display', serif;
+  font-family: Georgia, "Times New Roman", Times, serif;
   font-size: 0.88rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -509,7 +509,7 @@ body:has(#tab-tony.active) nav button[data-tab="tony"].active {
 .reader-card h3,
 .book-modal-desc-title,
 .modal h3 {
-  font-family: 'Cinzel', 'Playfair Display', serif;
+  font-family: Georgia, "Times New Roman", Times, serif;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -574,7 +574,7 @@ body:has(#tab-tony.active) nav button[data-tab="tony"].active {
   border-radius: 0;
   background: rgba(255, 255, 255, 0.04);
   color: var(--mist-dim);
-  font-family: 'Cinzel', 'Playfair Display', serif;
+  font-family: Georgia, "Times New Roman", Times, serif;
   font-size: 1.4rem;
   font-weight: 700;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
@@ -758,7 +758,7 @@ body:has(#tab-tony.active) nav button[data-tab="tony"].active {
 }
 
 .monthly-cell .mc-val {
-  font-family: 'Cinzel', 'Playfair Display', serif;
+  font-family: Georgia, "Times New Roman", Times, serif;
   font-size: 1.9rem;
   font-weight: 700;
   color: var(--theme-accent);
@@ -820,7 +820,7 @@ body:has(#tab-tony.active) nav button[data-tab="tony"].active {
 .add-form-toggle span {
   position: relative;
   z-index: 1;
-  font-family: 'Cinzel', 'Playfair Display', serif;
+  font-family: Georgia, "Times New Roman", Times, serif;
   font-size: 0.96rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -864,7 +864,7 @@ body:has(#tab-tony.active) nav button[data-tab="tony"].active {
   border-radius: 0;
   background: var(--theme-input);
   color: var(--theme-text);
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease, background 0.22s ease;
 }
 
@@ -1026,7 +1026,7 @@ body:has(#tab-tony.active) nav button[data-tab="tony"].active {
   padding: 11px 18px;
   overflow: hidden;
   color: var(--mist);
-  font-family: 'Cinzel', 'Playfair Display', serif;
+  font-family: Georgia, "Times New Roman", Times, serif;
   font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -1111,7 +1111,7 @@ thead tr {
 th {
   padding: 14px 12px;
   color: var(--mist);
-  font-family: 'Cinzel', 'Playfair Display', serif;
+  font-family: Georgia, "Times New Roman", Times, serif;
   font-size: 0.74rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -1299,7 +1299,7 @@ tr.clickable-row {
 }
 
 .book-modal-header h2 {
-  font-family: 'Cinzel', 'Playfair Display', serif;
+  font-family: Georgia, "Times New Roman", Times, serif;
   font-size: 0.98rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -1381,7 +1381,7 @@ tr.clickable-row {
 }
 
 .book-modal-title {
-  font-family: 'Cinzel', 'Playfair Display', serif;
+  font-family: Georgia, "Times New Roman", Times, serif;
   font-size: 1.7rem;
   line-height: 1.2;
   color: var(--mist);
