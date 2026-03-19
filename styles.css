@@ -185,73 +185,6 @@ h1 {
   text-transform: uppercase;
 }
 
-.auth-panel {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 18px;
-  width: min(980px, 100%);
-  margin: 26px auto 0;
-  padding: 16px 18px;
-  border: 1px solid var(--line);
-  background: rgba(15, 18, 24, 0.72);
-  box-shadow: var(--shadow-md);
-  backdrop-filter: blur(12px);
-}
-
-.auth-panel.signed-in {
-  border-color: rgba(125, 211, 252, 0.28);
-}
-
-.auth-copy {
-  text-align: left;
-}
-
-.auth-kicker {
-  color: var(--mist-dim);
-  font-size: 0.68rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-}
-
-.auth-user {
-  margin-top: 6px;
-  color: var(--mist);
-  font-family: 'Cinzel', 'Playfair Display', serif;
-  font-size: 1rem;
-  letter-spacing: 0.06em;
-}
-
-.auth-role {
-  margin-top: 4px;
-  color: var(--mist-dim);
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.auth-fields {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.auth-fields input {
-  min-width: 180px;
-  padding: 11px 12px;
-  border: 1px solid rgba(223, 230, 238, 0.12);
-  border-radius: 0;
-  background: rgba(10, 13, 18, 0.62);
-  color: var(--mist);
-}
-
-.auth-fields input:focus {
-  outline: none;
-  border-color: var(--line-strong);
-  box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.12);
-}
-
 nav {
   position: sticky;
   top: 0;
@@ -959,15 +892,6 @@ body:has(#tab-tony.active) nav button[data-tab="tony"].active {
   margin-bottom: 14px;
   color: var(--theme-muted);
   font-size: 0.75rem;
-}
-
-.access-note {
-  margin-bottom: 14px;
-  padding: 10px 12px;
-  border: 1px solid var(--theme-line);
-  background: var(--theme-surface-b);
-  color: var(--theme-muted);
-  font-size: 0.78rem;
 }
 
 .search-results {

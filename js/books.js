@@ -2,16 +2,10 @@ import { state } from './state.js';
 import { esc } from './utils.js';
 import { loadAll } from './data.js';
 import { validateLiterature } from './openLibrary.js';
-import { canEditBook, canEditUser } from './auth.js';
 
 export async function addBook(user) {
   if (!state.sb) {
     alert('Not connected to database.');
-    return;
-  }
-
-  if (!canEditUser(user)) {
-    alert('You do not have permission to add books for this reader.');
     return;
   }
 
@@ -68,10 +62,6 @@ export async function addBook(user) {
 export function openEdit(user, bookId) {
   const book = (state.db[user] || []).find(item => item.id === bookId);
   if (!book) return;
-  if (!canEditBook(book)) {
-    alert('You do not have permission to edit this book.');
-    return;
-  }
 
   state.editCtx = { user, bookId };
   document.getElementById('edit-form-container').innerHTML = `
@@ -94,11 +84,6 @@ export function openEdit(user, bookId) {
 
 export async function saveEdit() {
   if (!state.editCtx || !state.sb) return;
-  const book = (state.db[state.editCtx.user] || []).find(item => item.id === state.editCtx.bookId);
-  if (!canEditBook(book)) {
-    alert('You do not have permission to update this book.');
-    return;
-  }
 
   const getValue = id => document.getElementById(`edit-${id}`)?.value.trim();
   const { error } = await state.sb.from('books').update({
@@ -126,11 +111,6 @@ export async function saveEdit() {
 
 export async function deleteEdit() {
   if (!state.editCtx || !state.sb) return;
-  const book = (state.db[state.editCtx.user] || []).find(item => item.id === state.editCtx.bookId);
-  if (!canEditBook(book)) {
-    alert('You do not have permission to delete this book.');
-    return;
-  }
   if (!confirm('Delete this book?')) return;
 
   const { error } = await state.sb.from('books').delete().eq('id', state.editCtx.bookId);

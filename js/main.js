@@ -1,8 +1,6 @@
 import { initializeDatabase, loadAll, seedIfEmpty } from './data.js';
 import { closeEditModal, deleteEdit, saveEdit } from './books.js';
 import { closeBookModal, renderAll, renderUserTab } from './ui.js';
-import { restoreSession, signIn, signOut, subscribeToAuthChanges } from './auth.js';
-import { state } from './state.js';
 
 function bindGlobalEvents() {
   document.getElementById('save-edit-btn').addEventListener('click', saveEdit);
@@ -31,58 +29,14 @@ function bindGlobalEvents() {
       }
     });
   });
-
-  document.getElementById('auth-login-btn').addEventListener('click', handleSignIn);
-  document.getElementById('auth-logout-btn').addEventListener('click', handleSignOut);
-}
-
-async function handleSignIn() {
-  const email = document.getElementById('auth-email').value.trim();
-  const password = document.getElementById('auth-password').value;
-
-  if (!email || !password) {
-    alert('Enter your email and password to sign in.');
-    return;
-  }
-
-  const button = document.getElementById('auth-login-btn');
-  button.disabled = true;
-  button.textContent = 'Signing In...';
-
-  try {
-    await signIn(email, password);
-    await loadAll();
-  } catch (error) {
-    alert(`Sign-in failed: ${error.message || 'Unknown error'}`);
-  } finally {
-    button.disabled = false;
-    button.textContent = 'Sign In';
-  }
-}
-
-async function handleSignOut() {
-  try {
-    await signOut();
-    closeEditModal();
-    await loadAll();
-  } catch (error) {
-    alert(`Sign-out failed: ${error.message || 'Unknown error'}`);
-  }
 }
 
 async function bootstrap() {
   try {
     await initializeDatabase();
-    await restoreSession();
-    if (state.access?.role === 'admin') {
-      await seedIfEmpty();
-    }
+    await seedIfEmpty();
     await loadAll();
     bindGlobalEvents();
-    state.authCleanup = subscribeToAuthChanges(async () => {
-      closeEditModal();
-      await loadAll();
-    });
   } catch (error) {
     document.getElementById('loading').classList.remove('show');
     alert(`Database connection failed: ${error.message || 'Unknown error'}`);
