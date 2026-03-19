@@ -5,81 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Reading League</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="css/theme-overrides.css" />
-  <link rel="stylesheet" href="css/responsive.css" />
+  <link rel="stylesheet" href="src/styles/global.css" />
+  <link rel="stylesheet" href="src/pages/home/home.css" />
+  <link rel="stylesheet" href="src/pages/leaderboard/leaderboard.css" />
+  <link rel="stylesheet" href="src/pages/admin/admin.css" />
 </head>
 <body>
-  <div id="loading">Loading…</div>
-
-  <header>
-    <h1>The Reading League</h1>
-    <p class="subtitle">A Competitive Reading Tracker</p>
-  </header>
-
-  <nav id="main-nav">
-    <button class="active" data-tab="stats">League Table</button>
-    <button data-tab="ewan">Ewan</button>
-    <button data-tab="isaac">Isaac</button>
-    <button data-tab="ethan">Ethan</button>
-    <button data-tab="tony">Tony</button>
-  </nav>
-
-  <div class="admin-toolbar">
-    <button class="btn btn-primary" id="admin-toggle-btn" type="button">Unlock Editing</button>
-    <span id="admin-status-text">Viewing is public. Unlock to add, edit, or delete books.</span>
-  </div>
-
-  <div id="tab-stats" class="tab-content active">
-    <div class="leaderboard">
-      <h2>— Monthly Standings —</h2>
-      <div id="leaderboard-list"></div>
-    </div>
-    <div class="stats-grid" id="stats-grid"></div>
-  </div>
-
-  <div id="tab-ewan" class="tab-content"><div class="user-panel" data-user="Ewan"></div></div>
-  <div id="tab-isaac" class="tab-content"><div class="user-panel" data-user="Isaac"></div></div>
-  <div id="tab-ethan" class="tab-content"><div class="user-panel" data-user="Ethan"></div></div>
-  <div id="tab-tony" class="tab-content"><div class="user-panel" data-user="Tony"></div></div>
-
-  <div class="modal-overlay" id="edit-modal">
-    <div class="modal">
-      <button class="close-modal" id="close-edit">&times;</button>
-      <h3>Edit Book</h3>
-      <div id="edit-form-container"></div>
-      <div class="modal-actions">
-        <button class="btn btn-primary" id="save-edit-btn">Save Changes</button>
-        <button class="btn btn-danger" id="delete-edit-btn">Delete Book</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="book-modal-overlay" id="book-detail-modal">
-    <div class="book-modal">
-      <div class="book-modal-header">
-        <h2 id="bm-header-title">Book Details</h2>
-        <button class="book-modal-close" id="close-book-modal">&times;</button>
-      </div>
-      <div class="book-modal-body">
-        <div class="book-modal-cover-col">
-          <div class="book-modal-cover-loading" id="bm-cover-wrap">Loading cover…</div>
-        </div>
-        <div class="book-modal-info">
-          <div class="book-modal-title" id="bm-title"></div>
-          <div class="book-modal-author" id="bm-author"></div>
-          <div class="book-modal-meta" id="bm-meta"></div>
-          <div class="book-modal-progress" id="bm-progress"></div>
-          <div class="book-modal-desc-title">About this book</div>
-          <div class="book-modal-desc loading" id="bm-desc">Fetching description…</div>
-          <div class="book-modal-ol-meta" id="bm-ol-meta"></div>
-          <div class="book-modal-dates" id="bm-dates"></div>
-          <div id="bm-notes"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script type="module" src="js/main.js"></script>
+  <div id="app"></div>
+  <script type="module" src="src/main.js"></script>
 </body>
 </html>

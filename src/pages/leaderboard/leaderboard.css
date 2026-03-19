@@ -1,34 +1,3 @@
-/* Tab icons */
-nav button[data-tab="ewan"]::before,
-nav button[data-tab="isaac"]::before,
-nav button[data-tab="ethan"]::before,
-nav button[data-tab="tony"]::before {
-  display: inline-block;
-  margin-right: 8px;
-  font-size: 0.8em;
-  vertical-align: 1px;
-}
-
-nav button[data-tab="ewan"]::before {
-  content: "\2726";
-  color: #d0d7df;
-}
-
-nav button[data-tab="isaac"]::before {
-  content: "\2739";
-  color: #f0c560;
-}
-
-nav button[data-tab="ethan"]::before {
-  content: "\2727";
-  color: #85e5dd;
-}
-
-nav button[data-tab="tony"]::before {
-  content: "\2726";
-  color: #f07cc5;
-}
-
 #tab-ewan,
 #tab-ewan .user-panel {
   --theme-accent: #c6d0db;
@@ -193,38 +162,456 @@ nav button[data-tab="tony"]::before {
   --theme-row-hover: rgba(233, 93, 180, 0.08);
 }
 
-body:has(#tab-ewan.active) nav button[data-tab="ewan"].active,
-body:has(#tab-isaac.active) nav button[data-tab="isaac"].active,
-body:has(#tab-ethan.active) nav button[data-tab="ethan"].active,
-body:has(#tab-tony.active) nav button[data-tab="tony"].active {
+body:has(#tab-ewan.active) #main-nav button[data-tab='ewan'].active,
+body:has(#tab-isaac.active) #main-nav button[data-tab='isaac'].active,
+body:has(#tab-ethan.active) #main-nav button[data-tab='ethan'].active,
+body:has(#tab-tony.active) #main-nav button[data-tab='tony'].active {
   color: var(--mist);
 }
 
-body:has(#tab-ewan.active) nav button[data-tab="ewan"].active {
+body:has(#tab-ewan.active) #main-nav button[data-tab='ewan'].active {
   border-color: rgba(198, 208, 219, 0.36);
   background: linear-gradient(180deg, rgba(198, 208, 219, 0.16), rgba(92, 99, 110, 0.16)), rgba(24, 27, 33, 0.94);
   box-shadow: 0 0 0 1px rgba(198, 208, 219, 0.16), 0 0 18px rgba(198, 208, 219, 0.08);
 }
 
-body:has(#tab-isaac.active) nav button[data-tab="isaac"].active {
+body:has(#tab-isaac.active) #main-nav button[data-tab='isaac'].active {
   border-color: rgba(125, 211, 252, 0.4);
   background: linear-gradient(180deg, rgba(125, 211, 252, 0.22), rgba(58, 110, 165, 0.22)), rgba(20, 32, 49, 0.94);
   box-shadow: 0 0 0 1px rgba(125, 211, 252, 0.22), 0 0 22px rgba(125, 211, 252, 0.16);
 }
 
-body:has(#tab-ethan.active) nav button[data-tab="ethan"].active {
+body:has(#tab-ethan.active) #main-nav button[data-tab='ethan'].active {
   border-color: rgba(116, 214, 207, 0.38);
   background: linear-gradient(180deg, rgba(116, 214, 207, 0.2), rgba(110, 147, 181, 0.18)), rgba(22, 33, 43, 0.94);
   box-shadow: 0 0 0 1px rgba(116, 214, 207, 0.2), 0 0 22px rgba(116, 214, 207, 0.12);
 }
 
-body:has(#tab-tony.active) nav button[data-tab="tony"].active {
+body:has(#tab-tony.active) #main-nav button[data-tab='tony'].active {
   border-color: rgba(233, 93, 180, 0.38);
   background: linear-gradient(180deg, rgba(233, 93, 180, 0.24), rgba(81, 109, 203, 0.22)), rgba(44, 23, 56, 0.94);
   box-shadow: 0 0 0 1px rgba(233, 93, 180, 0.2), 0 0 24px rgba(233, 93, 180, 0.14);
 }
 
-/* Shared hero frame */
+#tab-stats,
+.user-panel {
+  width: min(1220px, calc(100% - 24px));
+  margin: 0 auto 36px;
+}
+
+.leaderboard,
+.stats-grid,
+.user-panel {
+  position: relative;
+}
+
+.leaderboard {
+  margin: 0 auto 28px;
+  padding: 28px;
+  background: linear-gradient(180deg, rgba(30, 37, 47, 0.94), rgba(18, 23, 31, 0.9));
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+.leaderboard::before,
+.reader-card::before,
+.monthly-strip::before,
+.book-table-wrap::before,
+.modal::before,
+.book-modal::before,
+.add-form-body::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(125, 211, 252, 0.35), rgba(255, 255, 255, 0.04), rgba(201, 164, 76, 0.28));
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.leaderboard h2,
+.section-title,
+.reader-card h3,
+.book-modal-desc-title,
+.modal h3 {
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.leaderboard h2 {
+  margin-bottom: 22px;
+  text-align: center;
+  font-size: 1.18rem;
+  color: var(--mist);
+}
+
+#leaderboard-list {
+  display: grid;
+  gap: 12px;
+}
+
+.lb-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 64px 1.2fr repeat(2, minmax(120px, 0.8fr));
+  gap: 14px;
+  align-items: center;
+  padding: 16px 18px;
+  border: 1px solid rgba(223, 230, 238, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
+    rgba(255, 255, 255, 0.03);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.lb-row::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(125, 211, 252, 0.08), transparent 45%, rgba(201, 164, 76, 0.06));
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+.lb-row:nth-child(1) {
+  border-color: rgba(201, 164, 76, 0.42);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.28), 0 0 24px rgba(201, 164, 76, 0.12);
+}
+
+.lb-row:nth-child(2) {
+  border-color: rgba(171, 191, 214, 0.24);
+}
+
+.lb-row:nth-child(3) {
+  border-color: rgba(58, 110, 165, 0.3);
+}
+
+.lb-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  border: 1px solid rgba(223, 230, 238, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--mist-dim);
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.lb-rank.first {
+  color: var(--gold);
+  box-shadow: 0 0 18px rgba(201, 164, 76, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.lb-rank.second {
+  color: #c5d2dd;
+}
+
+.lb-rank.third {
+  color: #8fbbe4;
+}
+
+.lb-name {
+  position: relative;
+  z-index: 1;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.lb-stat {
+  position: relative;
+  z-index: 1;
+  color: var(--mist-dim);
+  font-size: 0.75rem;
+  text-align: right;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.lb-stat strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--mist);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 22px;
+}
+
+.reader-card {
+  position: relative;
+  padding: 24px;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(180deg, rgba(41, 49, 61, 0.92), rgba(17, 22, 29, 0.94)),
+    rgba(23, 29, 37, 0.8);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.reader-card h3 {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+  font-size: 1.18rem;
+  color: var(--mist);
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(223, 230, 238, 0.08);
+  color: var(--mist-dim);
+  font-size: 0.84rem;
+}
+
+.stat-row:last-child {
+  border-bottom: none;
+}
+
+.stat-val {
+  color: var(--cyan);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.current-books {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.current-books-label {
+  margin-bottom: 5px;
+  color: var(--paused);
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.current-book-tag {
+  display: inline-flex;
+  align-items: center;
+  margin: 6px 6px 0 0;
+  padding: 6px 10px;
+  border: 1px solid rgba(125, 211, 252, 0.24);
+  background: rgba(58, 110, 165, 0.15);
+  color: var(--mist);
+  font-size: 0.73rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.empty-current-books {
+  color: var(--theme-muted);
+  font-size: 0.75rem;
+}
+
+.user-panel {
+  padding: 0;
+  color: var(--theme-text);
+}
+
+.user-panel::before {
+  content: '';
+  position: absolute;
+  inset: -10px -8px auto;
+  height: 280px;
+  background:
+    radial-gradient(circle at 12% 20%, color-mix(in srgb, var(--theme-accent) 18%, transparent), transparent 28%),
+    radial-gradient(circle at 88% 18%, color-mix(in srgb, var(--theme-highlight) 14%, transparent), transparent 26%);
+  opacity: 0.85;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.user-panel::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  pointer-events: none;
+}
+
+.section-title {
+  position: relative;
+  margin: 30px 0 16px;
+  color: var(--theme-text);
+  font-size: 1rem;
+  text-shadow: 0 0 18px color-mix(in srgb, var(--theme-accent) 20%, transparent);
+}
+
+.monthly-strip {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--theme-line);
+  background: linear-gradient(180deg, var(--theme-panel-strong), var(--theme-panel));
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.monthly-cell {
+  position: relative;
+  padding: 18px 16px;
+  border: 1px solid var(--theme-line);
+  text-align: center;
+  background: linear-gradient(180deg, var(--theme-surface-a), var(--theme-surface-b));
+  overflow: hidden;
+}
+
+.monthly-cell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(130deg, transparent 0 35%, rgba(255, 255, 255, 0.08) 50%, transparent 65% 100%);
+  opacity: 0.22;
+}
+
+.monthly-cell .mc-val {
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--theme-accent);
+}
+
+.monthly-cell .mc-lbl {
+  margin-top: 6px;
+  color: var(--theme-muted);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.list-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin: -4px 0 12px;
+}
+
+.sort-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--theme-muted);
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-size: 0.76rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.book-table-wrap {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--theme-line);
+  background: var(--theme-panel);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+thead tr {
+  background: linear-gradient(180deg, rgba(36, 44, 55, 0.98), rgba(18, 22, 29, 0.98));
+}
+
+th {
+  padding: 14px 12px;
+  color: var(--mist);
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+td {
+  padding: 0;
+  border-bottom: 1px solid rgba(223, 230, 238, 0.08);
+  vertical-align: middle;
+}
+
+td.padded {
+  padding: 13px 12px;
+}
+
+tbody tr {
+  transition: background 0.22s ease, transform 0.22s ease;
+}
+
+tr:nth-child(even) td {
+  background: var(--theme-surface-b);
+}
+
+tr:hover td {
+  background: var(--theme-row-hover);
+}
+
+tr.clickable-row {
+  cursor: pointer;
+}
+
+.cover-cell {
+  width: 60px;
+  padding: 10px 10px !important;
+}
+
+.book-cover,
+.book-cover-placeholder {
+  width: 42px;
+  height: 60px;
+  border: 1px solid rgba(223, 230, 238, 0.12);
+  display: block;
+}
+
+.book-cover {
+  object-fit: cover;
+}
+
+.book-cover-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--mist-dim);
+  font-size: 1.2rem;
+}
+
+.no-books {
+  padding: 52px 22px;
+  text-align: center;
+  color: var(--mist-dim);
+  font-size: 0.92rem;
+}
+
 #tab-ewan .user-panel,
 #tab-isaac .user-panel,
 #tab-ethan .user-panel,
@@ -250,32 +637,135 @@ body:has(#tab-tony.active) nav button[data-tab="tony"].active {
   top: 28px;
   z-index: 1;
   white-space: pre-line;
-  font-family: Georgia, "Times New Roman", Times, serif;
+  font-family: Georgia, 'Times New Roman', Times, serif;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-#tab-ewan .section-title,
-#tab-isaac .section-title,
-#tab-ethan .section-title,
-#tab-tony .section-title {
-  position: relative;
-  margin-top: 30px;
-  font-family: Georgia, "Times New Roman", Times, serif;
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: 0.18em;
+#tab-ewan .section-title:first-of-type::before,
+#tab-isaac .section-title:first-of-type::before,
+#tab-ethan .section-title:first-of-type::before,
+#tab-tony .section-title:first-of-type::before {
+  position: absolute;
+  left: 26px;
+  top: -100px;
+  z-index: 3;
+  display: block;
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
-/* Shared Isaac-style surfaces */
+#tab-ewan .section-title:first-of-type::after,
+#tab-isaac .section-title:first-of-type::after,
+#tab-ethan .section-title:first-of-type::after,
+#tab-tony .section-title:first-of-type::after {
+  content: '';
+  position: absolute;
+  left: 26px;
+  top: -108px;
+  width: 420px;
+  max-width: calc(100% - 52px);
+  height: 1px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--theme-accent) 55%, white), transparent 88%);
+  opacity: 0.65;
+}
+
+#tab-ewan .section-title:first-of-type::before {
+  content: 'Ash, Steel, and Empire';
+  color: rgba(219, 226, 234, 0.68);
+}
+
+#tab-isaac .section-title:first-of-type::before {
+  content: 'Traveller of the Cosmere';
+  color: rgba(217, 180, 87, 0.62);
+}
+
+#tab-ethan .section-title:first-of-type::before {
+  content: 'Silver Lines, Living Light';
+  color: rgba(223, 251, 255, 0.66);
+}
+
+#tab-tony .section-title:first-of-type::before {
+  content: 'Color, Breath, and Splendor';
+  color: rgba(255, 217, 137, 0.7);
+}
+
+#tab-ewan .user-panel::before {
+  background:
+    radial-gradient(circle at 14% 28%, rgba(240, 245, 250, 0.06), transparent 14%),
+    radial-gradient(circle at 78% 22%, rgba(255, 255, 255, 0.04), transparent 12%),
+    linear-gradient(180deg, rgba(18, 20, 25, 0.56), rgba(9, 10, 13, 0.92)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cg fill='rgba(220,226,235,0.07)'%3E%3Ccircle cx='20' cy='24' r='1.1'/%3E%3Ccircle cx='78' cy='54' r='1.2'/%3E%3Ccircle cx='132' cy='30' r='1'/%3E%3Ccircle cx='48' cy='92' r='1.1'/%3E%3Ccircle cx='112' cy='104' r='1.2'/%3E%3Ccircle cx='156' cy='84' r='0.9'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+#tab-ewan .user-panel::after {
+  content: "Ewan's Archive";
+  color: #dbe2ea;
+  font-size: clamp(1.5rem, 3vw, 2.6rem);
+  line-height: 1.05;
+  font-weight: 600;
+  text-shadow: 0 0 24px rgba(219, 226, 234, 0.08);
+}
+
+#tab-isaac .user-panel::before {
+  background:
+    radial-gradient(circle at 8% 24%, rgba(255, 255, 255, 0.12), transparent 10%),
+    radial-gradient(circle at 50% 18%, rgba(58, 110, 165, 0.12), transparent 34%),
+    linear-gradient(180deg, rgba(6, 10, 20, 0.5), rgba(4, 7, 14, 0.94)),
+    linear-gradient(180deg, rgba(6, 10, 20, 0.98), rgba(4, 7, 14, 1));
+}
+
+#tab-isaac .user-panel::after {
+  content: "Isaac's Tome";
+  color: #d9b457;
+  font-size: clamp(1.5rem, 3vw, 2.6rem);
+  line-height: 1.05;
+  font-weight: 600;
+  text-shadow: 0 0 26px rgba(217, 180, 87, 0.14);
+}
+
+#tab-ethan .user-panel::before {
+  background:
+    radial-gradient(circle at 18% 24%, rgba(116, 214, 207, 0.1), transparent 16%),
+    radial-gradient(circle at 82% 26%, rgba(232, 246, 251, 0.08), transparent 14%),
+    linear-gradient(180deg, rgba(15, 24, 31, 0.98), rgba(8, 14, 20, 0.98)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='120' viewBox='0 0 220 120'%3E%3Cg fill='none' stroke='rgba(126,226,219,0.16)' stroke-width='1.1'%3E%3Cpath d='M34 28h18l10-12 12 12h16v14l14 8-14 10v16H76l-12 12-10-12H34V60L20 50l14-8z'/%3E%3Cpath d='M156 20l12 12h18v18l12 8-12 10v18h-18l-12 12-12-12h-18V68l-12-10 12-8V32h18z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+#tab-ethan .user-panel::after {
+  content: "Ethan's Aon Hall";
+  color: #dffbff;
+  font-size: clamp(1.5rem, 3vw, 2.6rem);
+  line-height: 1.03;
+  text-shadow: 0 0 26px rgba(116, 214, 207, 0.16);
+}
+
+#tab-tony .user-panel::before {
+  background:
+    radial-gradient(circle at 16% 18%, rgba(240, 197, 96, 0.14), transparent 14%),
+    radial-gradient(circle at 76% 24%, rgba(233, 93, 180, 0.16), transparent 16%),
+    linear-gradient(90deg, rgba(81, 109, 203, 0.16), transparent 24%, rgba(233, 93, 180, 0.18) 62%, transparent 100%),
+    linear-gradient(180deg, rgba(34, 12, 44, 0.98), rgba(19, 8, 34, 0.98));
+}
+
+#tab-tony .user-panel::after {
+  content: "Tony's Court";
+  color: #ffd989;
+  font-size: clamp(1.5rem, 3vw, 2.6rem);
+  line-height: 1.03;
+  text-shadow: 0 0 26px rgba(233, 93, 180, 0.18);
+}
+
 #tab-ewan .monthly-strip,
 #tab-isaac .monthly-strip,
 #tab-ethan .monthly-strip,
 #tab-tony .monthly-strip {
   gap: 0;
   padding: 0;
-  border-radius: 0;
   border-left: none;
   border-right: none;
   box-shadow: none;
@@ -289,7 +779,6 @@ body:has(#tab-tony.active) nav button[data-tab="tony"].active {
   border-bottom: none;
   border-left: none;
   border-right: 1px solid var(--theme-line-strong);
-  border-radius: 0;
   box-shadow: none;
 }
 
@@ -300,40 +789,11 @@ body:has(#tab-tony.active) nav button[data-tab="tony"].active {
   border-right: none;
 }
 
-#tab-ewan .add-form-toggle,
-#tab-ewan .add-form-body,
 #tab-ewan .book-table-wrap,
-#tab-isaac .add-form-toggle,
-#tab-isaac .add-form-body,
 #tab-isaac .book-table-wrap,
-#tab-ethan .add-form-toggle,
-#tab-ethan .add-form-body,
 #tab-ethan .book-table-wrap,
-#tab-tony .add-form-toggle,
-#tab-tony .add-form-body,
 #tab-tony .book-table-wrap {
-  border-radius: 0;
   box-shadow: none;
-}
-
-#tab-ewan .add-form-toggle,
-#tab-ewan .add-form-body,
-#tab-ewan .book-table-wrap,
-#tab-ethan .add-form-toggle,
-#tab-ethan .add-form-body,
-#tab-ethan .book-table-wrap,
-#tab-tony .add-form-toggle,
-#tab-tony .add-form-body,
-#tab-tony .book-table-wrap {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--theme-panel-strong) 94%, black), color-mix(in srgb, var(--theme-panel) 98%, black));
-}
-
-/* Shared Isaac-style reading list */
-#tab-ewan .book-table-wrap,
-#tab-isaac .book-table-wrap,
-#tab-ethan .book-table-wrap,
-#tab-tony .book-table-wrap {
-  overflow: hidden;
 }
 
 #tab-ewan thead tr,
@@ -348,7 +808,6 @@ body:has(#tab-tony.active) nav button[data-tab="tony"].active {
 #tab-ethan th,
 #tab-tony th {
   color: var(--theme-highlight);
-  font-family: Georgia, "Times New Roman", Times, serif;
   font-size: 0.76rem;
   font-weight: 600;
   letter-spacing: 0.18em;
@@ -359,15 +818,6 @@ body:has(#tab-tony.active) nav button[data-tab="tony"].active {
 #tab-ethan td,
 #tab-tony td {
   border-bottom: 1px solid var(--theme-line);
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  font-size: 0.84rem;
-}
-
-#tab-ewan td.padded,
-#tab-isaac td.padded,
-#tab-ethan td.padded,
-#tab-tony td.padded {
-  font-size: 0.84rem;
 }
 
 #tab-ewan tr:nth-child(even) td,
@@ -388,282 +838,10 @@ body:has(#tab-tony.active) nav button[data-tab="tony"].active {
 #tab-isaac .status-badge,
 #tab-ethan .status-badge,
 #tab-tony .status-badge {
-  border-radius: 0;
-  box-shadow: none;
-  font-family: Georgia, "Times New Roman", Times, serif;
+  font-family: Georgia, 'Times New Roman', Times, serif;
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.14em;
-}
-
-#tab-ewan .progress-bar,
-#tab-isaac .progress-bar,
-#tab-ethan .progress-bar,
-#tab-tony .progress-bar {
-  border-radius: 0;
-  box-shadow: none;
-  background: color-mix(in srgb, var(--theme-line) 55%, black);
-}
-
-#tab-ewan .progress-fill,
-#tab-isaac .progress-fill,
-#tab-ethan .progress-fill,
-#tab-tony .progress-fill {
-  box-shadow: none;
-}
-
-#tab-ewan .sort-control,
-#tab-isaac .sort-control,
-#tab-ethan .sort-control,
-#tab-tony .sort-control {
-  font-family: Georgia, "Times New Roman", Times, serif;
-  font-size: 0.76rem;
-  letter-spacing: 0.18em;
-}
-
-#tab-ewan .sort-control select,
-#tab-isaac .sort-control select,
-#tab-ethan .sort-control select,
-#tab-tony .sort-control select {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  font-size: 0.84rem;
-  box-shadow: none;
-}
-
-#tab-ewan .book-cover,
-#tab-ewan .book-cover-placeholder,
-#tab-isaac .book-cover,
-#tab-isaac .book-cover-placeholder,
-#tab-ethan .book-cover,
-#tab-ethan .book-cover-placeholder,
-#tab-tony .book-cover,
-#tab-tony .book-cover-placeholder {
-  border-radius: 0;
-  box-shadow: none;
-}
-
-#tab-ewan .user-panel::before {
-  background:
-    radial-gradient(circle at 14% 28%, rgba(240, 245, 250, 0.06), transparent 14%),
-    radial-gradient(circle at 78% 22%, rgba(255, 255, 255, 0.04), transparent 12%),
-    linear-gradient(180deg, rgba(18, 20, 25, 0.56), rgba(9, 10, 13, 0.92)),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cg fill='rgba(220,226,235,0.07)'%3E%3Ccircle cx='20' cy='24' r='1.1'/%3E%3Ccircle cx='78' cy='54' r='1.2'/%3E%3Ccircle cx='132' cy='30' r='1'/%3E%3Ccircle cx='48' cy='92' r='1.1'/%3E%3Ccircle cx='112' cy='104' r='1.2'/%3E%3Ccircle cx='156' cy='84' r='0.9'/%3E%3C/g%3E%3C/svg%3E");
-  box-shadow: inset 0 -24px 40px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(198, 208, 219, 0.06);
-}
-
-#tab-ewan .user-panel::after {
-  content: "Ewan's Archive";
-  top: 28px;
-  left: 26px;
-  color: #dbe2ea;
-  font-size: clamp(1.5rem, 3vw, 2.6rem);
-  line-height: 1.05;
-  letter-spacing: 0.08em;
-  font-weight: 600;
-  text-shadow: 0 0 24px rgba(219, 226, 234, 0.08);
-}
-
-#tab-ewan .monthly-strip,
-#tab-ewan .add-form-toggle,
-#tab-ewan .add-form-body,
-#tab-ewan .book-table-wrap {
-  border-radius: 0;
-}
-
-#tab-isaac .user-panel::before {
-  background:
-    radial-gradient(circle at 8% 24%, rgba(255, 255, 255, 0.12), transparent 10%),
-    radial-gradient(circle at 50% 18%, rgba(58, 110, 165, 0.12), transparent 34%),
-    linear-gradient(180deg, rgba(6, 10, 20, 0.5), rgba(4, 7, 14, 0.94)),
-    linear-gradient(180deg, rgba(6, 10, 20, 0.98), rgba(4, 7, 14, 1));
-  box-shadow:
-    inset 0 -40px 80px rgba(0, 0, 0, 0.54),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-
-#tab-isaac .user-panel::after {
-  content: "Isaac's Tome";
-  top: 28px;
-  left: 26px;
-  color: #d9b457;
-  font-size: clamp(1.5rem, 3vw, 2.6rem);
-  line-height: 1.05;
-  letter-spacing: 0.08em;
-  font-weight: 600;
-  text-shadow: 0 0 26px rgba(217, 180, 87, 0.14);
-}
-
-#tab-isaac .section-title {
-  color: #d9b457;
-}
-
-/* Hero subtitles */
-#tab-ewan .section-title:first-of-type::before,
-#tab-isaac .section-title:first-of-type::before,
-#tab-ethan .section-title:first-of-type::before,
-#tab-tony .section-title:first-of-type::before {
-  position: absolute;
-  left: 26px;
-  top: -100px;
-  z-index: 3;
-  display: block;
-  font-family: Georgia, "Times New Roman", Times, serif;
-  font-size: 0.82rem;
-  font-weight: 500;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-#tab-ewan .section-title:first-of-type::before {
-  content: "Ash, Steel, and Empire";
-  color: rgba(219, 226, 234, 0.68);
-}
-
-#tab-isaac .section-title:first-of-type::before {
-  content: "Traveller of the Cosmere";
-  color: rgba(217, 180, 87, 0.62);
-}
-
-#tab-ethan .section-title:first-of-type::before {
-  content: "Silver Lines, Living Light";
-  color: rgba(223, 251, 255, 0.66);
-}
-
-#tab-tony .section-title:first-of-type::before {
-  content: "Color, Breath, and Splendor";
-  color: rgba(255, 217, 137, 0.7);
-}
-
-#tab-ewan .section-title:first-of-type::after,
-#tab-isaac .section-title:first-of-type::after,
-#tab-ethan .section-title:first-of-type::after,
-#tab-tony .section-title:first-of-type::after {
-  content: "";
-  position: absolute;
-  left: 26px;
-  top: -108px;
-  width: 420px;
-  max-width: calc(100% - 52px);
-  height: 1px;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--theme-accent) 55%, white), transparent 88%);
-  opacity: 0.65;
-}
-
-/* Isaac-specific surfaces */
-#tab-isaac .monthly-strip {
-  gap: 0;
-  padding: 0;
-  border-radius: 0;
-  border-left: none;
-  border-right: none;
-  background: linear-gradient(180deg, rgba(7, 11, 22, 0.98), rgba(6, 9, 18, 0.98));
-}
-
-#tab-isaac .monthly-cell {
-  border-top: none;
-  border-bottom: none;
-  border-left: none;
-  border-right: 1px solid rgba(41, 74, 122, 0.7);
-  border-radius: 0;
-  background: linear-gradient(180deg, rgba(6, 10, 20, 0.74), rgba(8, 13, 24, 0.92));
-}
-
-#tab-isaac .monthly-cell:last-child {
-  border-right: none;
-}
-
-#tab-isaac .monthly-cell .mc-val {
-  color: #d9b457;
-}
-
-#tab-isaac .monthly-cell .mc-lbl {
-  color: #5873a7;
-}
-
-#tab-isaac .add-form-toggle,
-#tab-isaac .add-form-body,
-#tab-isaac .book-table-wrap {
-  border-radius: 0;
-  background: linear-gradient(180deg, rgba(9, 13, 25, 0.96), rgba(6, 9, 18, 0.98));
-}
-
-#tab-isaac .add-form-toggle span,
-#tab-isaac th,
-#tab-isaac .book-modal-title {
-  color: #d9b457;
-}
-
-#tab-isaac thead tr {
-  background: linear-gradient(180deg, rgba(22, 24, 14, 0.96), rgba(17, 18, 11, 0.98));
-}
-
-#tab-isaac tr:hover td {
-  background: rgba(43, 57, 86, 0.22);
-}
-
-#tab-isaac .btn-primary {
-  border-color: rgba(217, 180, 87, 0.24);
-}
-
-#tab-isaac .book-table-wrap {
-  box-shadow: inset 0 1px 0 rgba(217, 180, 87, 0.06), var(--shadow-md);
-}
-
-#tab-isaac .add-form-toggle,
-#tab-isaac .monthly-strip,
-#tab-isaac .book-table-wrap,
-#tab-isaac .monthly-cell,
-#tab-isaac .btn,
-#tab-isaac .status-badge,
-#tab-isaac .book-modal,
-#tab-isaac .modal {
-  box-shadow: none;
-}
-
-#tab-ethan .user-panel::before {
-  background:
-    radial-gradient(circle at 18% 24%, rgba(116, 214, 207, 0.1), transparent 16%),
-    radial-gradient(circle at 82% 26%, rgba(232, 246, 251, 0.08), transparent 14%),
-    linear-gradient(180deg, rgba(15, 24, 31, 0.98), rgba(8, 14, 20, 0.98)),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='120' viewBox='0 0 220 120'%3E%3Cg fill='none' stroke='rgba(126,226,219,0.16)' stroke-width='1.1'%3E%3Cpath d='M34 28h18l10-12 12 12h16v14l14 8-14 10v16H76l-12 12-10-12H34V60L20 50l14-8z'/%3E%3Cpath d='M156 20l12 12h18v18l12 8-12 10v18h-18l-12 12-12-12h-18V68l-12-10 12-8V32h18z'/%3E%3C/g%3E%3C/svg%3E");
-}
-
-#tab-ethan .user-panel::after {
-  content: "Ethan's Aon Hall";
-  color: #dffbff;
-  font-size: clamp(1.5rem, 3vw, 2.6rem);
-  line-height: 1.03;
-  text-shadow: 0 0 26px rgba(116, 214, 207, 0.16);
-}
-
-#tab-ethan .monthly-cell,
-#tab-ethan .add-form-toggle,
-#tab-ethan .add-form-body,
-#tab-ethan .book-table-wrap {
-  backdrop-filter: blur(10px);
-}
-
-#tab-tony .user-panel::before {
-  background:
-    radial-gradient(circle at 16% 18%, rgba(240, 197, 96, 0.14), transparent 14%),
-    radial-gradient(circle at 76% 24%, rgba(233, 93, 180, 0.16), transparent 16%),
-    linear-gradient(90deg, rgba(81, 109, 203, 0.16), transparent 24%, rgba(233, 93, 180, 0.18) 62%, transparent 100%),
-    linear-gradient(180deg, rgba(34, 12, 44, 0.98), rgba(19, 8, 34, 0.98));
-}
-
-#tab-tony .user-panel::after {
-  content: "Tony's Court";
-  color: #ffd989;
-  font-size: clamp(1.5rem, 3vw, 2.6rem);
-  line-height: 1.03;
-  text-shadow: 0 0 26px rgba(233, 93, 180, 0.18);
-}
-
-#tab-tony .monthly-cell .mc-val,
-#tab-tony .add-form-toggle span,
-#tab-tony th {
-  color: #ffd989;
 }
 
 body:has(#tab-ewan.active) .book-modal-overlay,
@@ -693,14 +871,6 @@ body:has(#tab-ewan.active) .btn-danger {
   --theme-note-border: rgba(198, 208, 219, 0.18);
   --theme-note-fg: #d8e1ec;
   --theme-progress: linear-gradient(90deg, #59616d, #cdd5de);
-  --theme-button: linear-gradient(180deg, rgba(92, 99, 110, 0.72), rgba(43, 47, 54, 0.95));
-  --theme-button-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
-  --theme-button-hover: 0 16px 28px rgba(0, 0, 0, 0.34), 0 0 20px rgba(198, 208, 219, 0.08);
-  --theme-danger-bg: rgba(198, 208, 219, 0.08);
-  --theme-danger-fg: #d9e2ec;
-  --theme-danger-border: rgba(198, 208, 219, 0.22);
-  --theme-danger-hover: rgba(198, 208, 219, 0.14);
-  --theme-danger-shadow: 0 10px 24px rgba(80, 88, 97, 0.16);
 }
 
 body:has(#tab-isaac.active) .book-modal-overlay,
@@ -730,14 +900,6 @@ body:has(#tab-isaac.active) .btn-danger {
   --theme-note-border: rgba(125, 211, 252, 0.24);
   --theme-note-fg: #d8f7ff;
   --theme-progress: linear-gradient(90deg, #4b8ece, #8ce5ff);
-  --theme-button: linear-gradient(180deg, rgba(99, 188, 255, 0.72), rgba(39, 88, 148, 0.9));
-  --theme-button-shadow: 0 12px 26px rgba(45, 105, 184, 0.24);
-  --theme-button-hover: 0 18px 32px rgba(45, 105, 184, 0.3), 0 0 26px rgba(125, 211, 252, 0.18);
-  --theme-danger-bg: rgba(223, 240, 255, 0.1);
-  --theme-danger-fg: #e7f7ff;
-  --theme-danger-border: rgba(125, 211, 252, 0.22);
-  --theme-danger-hover: rgba(125, 211, 252, 0.16);
-  --theme-danger-shadow: 0 12px 24px rgba(125, 211, 252, 0.12);
 }
 
 body:has(#tab-ethan.active) .book-modal-overlay,
@@ -767,14 +929,6 @@ body:has(#tab-ethan.active) .btn-danger {
   --theme-note-border: rgba(116, 214, 207, 0.22);
   --theme-note-fg: #dffbfd;
   --theme-progress: linear-gradient(90deg, #6e93b5, #7fe2d9);
-  --theme-button: linear-gradient(180deg, rgba(116, 214, 207, 0.68), rgba(69, 118, 150, 0.88));
-  --theme-button-shadow: 0 12px 24px rgba(84, 151, 169, 0.2);
-  --theme-button-hover: 0 16px 30px rgba(84, 151, 169, 0.28), 0 0 24px rgba(116, 214, 207, 0.16);
-  --theme-danger-bg: rgba(232, 246, 251, 0.08);
-  --theme-danger-fg: #e4f6fb;
-  --theme-danger-border: rgba(116, 214, 207, 0.22);
-  --theme-danger-hover: rgba(116, 214, 207, 0.14);
-  --theme-danger-shadow: 0 12px 24px rgba(116, 214, 207, 0.1);
 }
 
 body:has(#tab-tony.active) .book-modal-overlay,
@@ -804,13 +958,52 @@ body:has(#tab-tony.active) .btn-danger {
   --theme-note-border: rgba(240, 197, 96, 0.24);
   --theme-note-fg: #ffefc9;
   --theme-progress: linear-gradient(90deg, #516dcb, #e95db4, #f0c560);
-  --theme-button: linear-gradient(180deg, rgba(233, 93, 180, 0.8), rgba(81, 109, 203, 0.92));
-  --theme-button-shadow: 0 12px 26px rgba(132, 64, 176, 0.24);
-  --theme-button-hover: 0 18px 34px rgba(132, 64, 176, 0.3), 0 0 24px rgba(233, 93, 180, 0.18);
-  --theme-danger-bg: rgba(240, 197, 96, 0.12);
-  --theme-danger-fg: #ffeab4;
-  --theme-danger-border: rgba(240, 197, 96, 0.26);
-  --theme-danger-hover: rgba(240, 197, 96, 0.18);
-  --theme-danger-shadow: 0 12px 24px rgba(240, 197, 96, 0.14);
 }
 
+@media (max-width: 920px) {
+  .lb-row {
+    grid-template-columns: 56px 1fr;
+  }
+
+  .lb-stat {
+    text-align: left;
+  }
+}
+
+@media (max-width: 540px) {
+  #tab-stats,
+  .user-panel {
+    width: min(1220px, calc(100% - 16px));
+  }
+
+  .leaderboard,
+  .monthly-strip,
+  .book-table-wrap {
+    border-radius: 0;
+  }
+
+  .list-toolbar {
+    justify-content: flex-start;
+  }
+
+  .sort-control {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 480px) {
+  .leaderboard {
+    padding: 20px;
+  }
+
+  .lb-row {
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .monthly-strip {
+    gap: 10px;
+    padding: 10px;
+  }
+}
