@@ -1,13 +1,13 @@
-import { USERS } from './config.js';
+import { SUPABASE_KEY, SUPABASE_URL, USERS } from './config.js';
 import { state } from './state.js';
 import { showLoading, isThisMonth } from './utils.js';
 import { renderAll } from './ui.js';
 
 export async function initializeDatabase() {
   state.sb = window.supabase.createClient(
-    'https://rbtjqlsgfflavrppufbd.supabase.co',
-    'sb_publishable_heqwqMywY-SgbI2zoFGwLQ_DCp7zDrJ',
-    { auth: { persistSession: false } }
+    SUPABASE_URL,
+    SUPABASE_KEY,
+    { auth: { persistSession: true, autoRefreshToken: true } }
   );
 
   const { error } = await state.sb.from('books').select('id').limit(1);
@@ -15,6 +15,8 @@ export async function initializeDatabase() {
 }
 
 export async function seedIfEmpty() {
+  if (!state.isAdmin) return;
+
   const { data } = await state.sb.from('books').select('id').eq('reader', 'Ewan').limit(1);
   if (data?.length) return;
 

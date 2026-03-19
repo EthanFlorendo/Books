@@ -1,9 +1,12 @@
 import { state } from './state.js';
 import { esc } from './utils.js';
 import { loadAll } from './data.js';
+import { ensureAdminAccess } from './auth.js';
 import { validateLiterature } from './openLibrary.js';
 
 export async function addBook(user) {
+  if (!(await ensureAdminAccess('add a book'))) return;
+
   if (!state.sb) {
     alert('Not connected to database.');
     return;
@@ -60,6 +63,13 @@ export async function addBook(user) {
 }
 
 export function openEdit(user, bookId) {
+  if (!state.isAdmin) {
+    ensureAdminAccess('edit books').then(isAllowed => {
+      if (isAllowed) openEdit(user, bookId);
+    });
+    return;
+  }
+
   const book = (state.db[user] || []).find(item => item.id === bookId);
   if (!book) return;
 
@@ -83,6 +93,7 @@ export function openEdit(user, bookId) {
 }
 
 export async function saveEdit() {
+  if (!(await ensureAdminAccess('save edits'))) return;
   if (!state.editCtx || !state.sb) return;
 
   const getValue = id => document.getElementById(`edit-${id}`)?.value.trim();
@@ -110,6 +121,7 @@ export async function saveEdit() {
 }
 
 export async function deleteEdit() {
+  if (!(await ensureAdminAccess('delete books'))) return;
   if (!state.editCtx || !state.sb) return;
   if (!confirm('Delete this book?')) return;
 

@@ -1,5 +1,6 @@
 import { USERS } from './config.js';
 import { state } from './state.js';
+import { ensureAdminAccess } from './auth.js';
 import { userStats } from './data.js';
 import { esc, fmt, stars } from './utils.js';
 import { fetchBookDetails, fetchMissingCovers, hideDropdown, onBookSearch } from './openLibrary.js';
@@ -25,14 +26,15 @@ export function renderStats() {
     <div class="lb-row">
       <span class="lb-rank ${rankClasses[index] || ''}">${index + 1}</span>
       <span class="lb-name">${row.user}</span>
-      <span class="lb-stat"><strong>${row.monthlyBooks}</strong>books this month</span>
-      <span class="lb-stat"><strong>${row.monthlyPages}</strong>pages this month</span>
+      <span class="lb-stat"><strong>${row.monthlyBooks}</strong> books this month</span>
+      <span class="lb-stat"><strong>${row.monthlyPages}</strong> pages this month</span>
     </div>
   `).join('');
 
   document.getElementById('stats-grid').innerHTML = USERS.map(user => {
     const s = userStats(user);
-    const currentBooks = s.current.map(book => `<span class="current-book-tag">${esc(book.title)}</span>`).join('') || '<em style="color:var(--paused);font-size:.75rem">Nothing current</em>';
+    const currentBooks = s.current.map(book => `<span class="current-book-tag">${esc(book.title)}</span>`).join('')
+      || '<em style="color:var(--paused);font-size:.75rem">Nothing current</em>';
 
     return `
       <div class="reader-card">
@@ -40,16 +42,49 @@ export function renderStats() {
         <div class="stat-row"><span>Total Started</span><span class="stat-val">${s.books.length}</span></div>
         <div class="stat-row"><span>Completed</span><span class="stat-val">${s.finished.length}</span></div>
         <div class="stat-row"><span>Pages Read</span><span class="stat-val">${s.allPages.toLocaleString()}</span></div>
-        <div class="stat-row"><span>Novels</span><span class="stat-val">${s.byType['Novel']}</span></div>
-        <div class="stat-row"><span>Poetry</span><span class="stat-val">${s.byType['Poetry']}</span></div>
+        <div class="stat-row"><span>Novels</span><span class="stat-val">${s.byType.Novel}</span></div>
+        <div class="stat-row"><span>Poetry</span><span class="stat-val">${s.byType.Poetry}</span></div>
         <div class="stat-row"><span>Short Stories</span><span class="stat-val">${s.byType['Short Story']}</span></div>
-        <div class="stat-row"><span>Plays</span><span class="stat-val">${s.byType['Play']}</span></div>
+        <div class="stat-row"><span>Plays</span><span class="stat-val">${s.byType.Play}</span></div>
         <div class="current-books">
           <div style="font-size:.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--paused);margin-bottom:5px">Currently Reading</div>
           ${currentBooks}
         </div>
       </div>`;
   }).join('');
+}
+
+function getAdminFormMarkup(user) {
+  if (!state.isAdmin) {
+    return `
+      <div class="admin-locked-note">
+        Editing is locked. Use the admin button above to unlock add, edit, and delete controls.
+      </div>
+    `;
+  }
+
+  return `
+    <div class="search-wrap">
+      <span class="search-icon">Find</span>
+      <input type="text" id="${user}-search" placeholder="Search by title or author to autofill..." autocomplete="off">
+      <div class="search-results" id="${user}-search-results" style="display:none"></div>
+    </div>
+    <div class="search-hint">Type to search Open Library and click a result to autofill the fields below</div>
+    <div class="form-grid">
+      <div class="field-group two"><label>Title *</label><input type="text" id="${user}-title" placeholder="Book title"></div>
+      <div class="field-group"><label>Author *</label><input type="text" id="${user}-author" placeholder="Author"></div>
+      <div class="field-group"><label>Pages Read</label><input type="number" id="${user}-pages" placeholder="0" min="0"></div>
+      <div class="field-group"><label>Total Pages</label><input type="number" id="${user}-totalPages" placeholder="0" min="0"></div>
+      <div class="field-group"><label>Type</label><select id="${user}-type"><option>Novel</option><option>Short Story</option><option>Poetry</option><option>Play</option></select></div>
+      <div class="field-group"><label>Status</label><select id="${user}-status"><option>Current</option><option>Completed</option><option>Paused</option></select></div>
+      <div class="field-group"><label>Date Started</label><input type="date" id="${user}-dateStarted"></div>
+      <div class="field-group"><label>Date Finished</label><input type="date" id="${user}-dateFinished"></div>
+      <div class="field-group"><label>Rating</label><select id="${user}-rating"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+      <div class="field-group"><label>Reread?</label><select id="${user}-reread"><option value="false">No</option><option value="true">Yes</option></select></div>
+      <div class="field-group two"><label>Notes</label><input type="text" id="${user}-notes" placeholder="Optional..."></div>
+      <div class="full" style="margin-top:4px"><button class="btn btn-primary" id="${user}-add-btn">Add to List</button></div>
+    </div>
+  `;
 }
 
 export function renderUserTab(user) {
@@ -59,7 +94,7 @@ export function renderUserTab(user) {
   const sortedBooks = [...s.books].sort((a, b) => compareBooks(a, b, sortBy));
 
   panel.innerHTML = `
-    <div class="section-title">— This Month —</div>
+    <div class="section-title">This Month</div>
     <div class="monthly-strip">
       <div class="monthly-cell"><div class="mc-val">${s.monthlyCompleted.length}</div><div class="mc-lbl">Completed</div></div>
       <div class="monthly-cell"><div class="mc-val">${s.monthlyPages}</div><div class="mc-lbl">Pages Read</div></div>
@@ -68,33 +103,14 @@ export function renderUserTab(user) {
     </div>
 
     <div class="add-form-toggle" id="${user}-toggle">
-      <span>＋ Add a Book</span>
-      <span class="toggle-arrow">▼</span>
+      <span>${state.isAdmin ? 'Add a Book' : 'Admin Locked'}</span>
+      <span class="toggle-arrow">${state.isAdmin ? 'Open' : 'Unlock'}</span>
     </div>
     <div class="add-form-body" id="${user}-form-body">
-      <div class="search-wrap">
-        <span class="search-icon">🔍</span>
-        <input type="text" id="${user}-search" placeholder="Search by title or author to autofill…" autocomplete="off">
-        <div class="search-results" id="${user}-search-results" style="display:none"></div>
-      </div>
-      <div class="search-hint">Type to search Open Library — click a result to autofill fields below</div>
-      <div class="form-grid">
-        <div class="field-group two"><label>Title *</label><input type="text" id="${user}-title" placeholder="Book title"></div>
-        <div class="field-group"><label>Author *</label><input type="text" id="${user}-author" placeholder="Author"></div>
-        <div class="field-group"><label>Pages Read</label><input type="number" id="${user}-pages" placeholder="0" min="0"></div>
-        <div class="field-group"><label>Total Pages</label><input type="number" id="${user}-totalPages" placeholder="0" min="0"></div>
-        <div class="field-group"><label>Type</label><select id="${user}-type"><option>Novel</option><option>Short Story</option><option>Poetry</option><option>Play</option></select></div>
-        <div class="field-group"><label>Status</label><select id="${user}-status"><option>Current</option><option>Completed</option><option>Paused</option></select></div>
-        <div class="field-group"><label>Date Started</label><input type="date" id="${user}-dateStarted"></div>
-        <div class="field-group"><label>Date Finished</label><input type="date" id="${user}-dateFinished"></div>
-        <div class="field-group"><label>Rating</label><select id="${user}-rating"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
-        <div class="field-group"><label>Reread?</label><select id="${user}-reread"><option value="false">No</option><option value="true">Yes</option></select></div>
-        <div class="field-group two"><label>Notes</label><input type="text" id="${user}-notes" placeholder="Optional…"></div>
-        <div class="full" style="margin-top:4px"><button class="btn btn-primary" id="${user}-add-btn">Add to List</button></div>
-      </div>
+      ${getAdminFormMarkup(user)}
     </div>
 
-    <div class="section-title">— Reading List —</div>
+    <div class="section-title">Reading List</div>
     <div class="list-toolbar">
       <label class="sort-control" for="${user}-sort">
         <span>Sort By</span>
@@ -127,12 +143,15 @@ export function renderUserTab(user) {
 
 function renderBookRow(user, book) {
   const pct = book.total_pages > 0 ? Math.min(100, Math.round((book.pages / book.total_pages) * 100)) : 0;
-  const coverHtml = `<div class="book-cover-placeholder" data-fetch="${esc(book.title)}" data-id="${book.id}">📖</div>`;
+  const coverHtml = `<div class="book-cover-placeholder" data-fetch="${esc(book.title)}" data-id="${book.id}">Book</div>`;
+  const editCell = state.isAdmin
+    ? `<button class="btn btn-danger" data-edit-book="${book.id}" data-user="${user}">Edit</button>`
+    : '';
 
   return `
     <tr class="clickable-row" data-book-row data-user="${user}" data-book-id="${book.id}">
       <td class="cover-cell">${coverHtml}</td>
-      <td class="padded"><strong>${esc(book.title)}</strong>${book.reread ? ' <span title="Reread" style="color:var(--gold)">↺</span>' : ''}</td>
+      <td class="padded"><strong>${esc(book.title)}</strong>${book.reread ? ' <span title="Reread" style="color:var(--gold)">R</span>' : ''}</td>
       <td class="padded">${esc(book.author || '')}</td>
       <td class="padded">${book.type || ''}</td>
       <td class="padded"><span class="status-badge status-${book.status}">${book.status}</span></td>
@@ -143,7 +162,7 @@ function renderBookRow(user, book) {
       <td class="padded"><span class="stars">${stars(book.rating)}</span></td>
       <td class="padded">${fmt(book.date_started)}</td>
       <td class="padded">${fmt(book.date_finished)}</td>
-      <td class="padded"><button class="btn btn-danger" data-edit-book="${book.id}" data-user="${user}">Edit</button></td>
+      <td class="padded">${editCell}</td>
     </tr>`;
 }
 
@@ -204,15 +223,28 @@ function bindUserTabEvents(user) {
   const toggle = document.getElementById(`${user}-toggle`);
   const body = document.getElementById(`${user}-form-body`);
   toggle.addEventListener('click', () => {
+    if (!state.isAdmin) {
+      ensureAdminAccess('unlock editing').then(isAllowed => {
+        if (isAllowed) renderUserTab(user);
+      });
+      return;
+    }
+
     toggle.classList.toggle('open');
     body.classList.toggle('open');
   });
 
   const searchInput = document.getElementById(`${user}-search`);
-  searchInput.addEventListener('input', () => onBookSearch(user));
-  searchInput.addEventListener('blur', () => hideDropdown(user));
+  if (searchInput) {
+    searchInput.addEventListener('input', () => onBookSearch(user));
+    searchInput.addEventListener('blur', () => hideDropdown(user));
+  }
 
-  document.getElementById(`${user}-add-btn`).addEventListener('click', () => addBook(user));
+  const addButton = document.getElementById(`${user}-add-btn`);
+  if (addButton) {
+    addButton.addEventListener('click', () => addBook(user));
+  }
+
   document.getElementById(`${user}-sort`).addEventListener('change', event => {
     state.sorts[user] = event.target.value;
     renderUserTab(user);
@@ -250,8 +282,8 @@ export async function openBookDetail(user, bookId) {
   document.getElementById('bm-meta').innerHTML = `
     <span class="book-modal-tag status-tag">${book.status}</span>
     <span class="book-modal-tag">${book.type || 'Novel'}</span>
-    ${book.rating ? `<span class="book-modal-tag">★ ${book.rating}/5</span>` : ''}
-    ${book.reread ? '<span class="book-modal-tag">↺ Reread</span>' : ''}`;
+    ${book.rating ? `<span class="book-modal-tag">Rating ${book.rating}/5</span>` : ''}
+    ${book.reread ? '<span class="book-modal-tag">Reread</span>' : ''}`;
 
   document.getElementById('bm-progress').innerHTML = book.total_pages > 0 ? `
     <div class="book-modal-progress-bar"><div class="book-modal-progress-fill" style="width:${pct}%"></div></div>
@@ -260,9 +292,9 @@ export async function openBookDetail(user, bookId) {
   const started = book.date_started ? `<span><strong>Started</strong> ${fmt(book.date_started)}</span>` : '';
   const finished = book.date_finished ? `<span><strong>Finished</strong> ${fmt(book.date_finished)}</span>` : '';
   document.getElementById('bm-dates').innerHTML = started + finished;
-  document.getElementById('bm-notes').innerHTML = book.notes ? `<div class="book-modal-notes">📝 ${esc(book.notes)}</div>` : '';
-  document.getElementById('bm-cover-wrap').innerHTML = '<div class="book-modal-cover-loading">Loading cover…</div>';
-  document.getElementById('bm-desc').textContent = 'Fetching description…';
+  document.getElementById('bm-notes').innerHTML = book.notes ? `<div class="book-modal-notes">Notes: ${esc(book.notes)}</div>` : '';
+  document.getElementById('bm-cover-wrap').innerHTML = '<div class="book-modal-cover-loading">Loading cover...</div>';
+  document.getElementById('bm-desc').textContent = 'Fetching description...';
   document.getElementById('bm-desc').className = 'book-modal-desc loading';
   document.getElementById('bm-ol-meta').innerHTML = '';
 
@@ -270,7 +302,7 @@ export async function openBookDetail(user, bookId) {
     const result = await fetchBookDetails(book.title, book.author);
 
     if (!result?.doc) {
-      document.getElementById('bm-cover-wrap').innerHTML = '<div class="book-modal-cover-placeholder">📖</div>';
+      document.getElementById('bm-cover-wrap').innerHTML = '<div class="book-modal-cover-placeholder">Book</div>';
       document.getElementById('bm-desc').textContent = 'No description found for this book.';
       document.getElementById('bm-desc').className = 'book-modal-desc';
       return;
@@ -282,7 +314,7 @@ export async function openBookDetail(user, bookId) {
       const coverUrl = `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`;
       document.getElementById('bm-cover-wrap').innerHTML = `<img class="book-modal-cover" src="${coverUrl}" alt="">`;
     } else {
-      document.getElementById('bm-cover-wrap').innerHTML = '<div class="book-modal-cover-placeholder">📖</div>';
+      document.getElementById('bm-cover-wrap').innerHTML = '<div class="book-modal-cover-placeholder">Book</div>';
     }
 
     const meta = [];
@@ -294,7 +326,7 @@ export async function openBookDetail(user, bookId) {
     document.getElementById('bm-desc').textContent = description || 'No description available for this edition.';
     document.getElementById('bm-desc').className = 'book-modal-desc';
   } catch {
-    document.getElementById('bm-cover-wrap').innerHTML = '<div class="book-modal-cover-placeholder">📖</div>';
+    document.getElementById('bm-cover-wrap').innerHTML = '<div class="book-modal-cover-placeholder">Book</div>';
     document.getElementById('bm-desc').textContent = 'Could not connect to Open Library.';
     document.getElementById('bm-desc').className = 'book-modal-desc';
   }

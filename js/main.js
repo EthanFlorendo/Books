@@ -1,4 +1,5 @@
 import { initializeDatabase, loadAll, seedIfEmpty } from './data.js';
+import { bindAuthStateListener, syncAdminState, toggleAdminAccess, updateAdminUi } from './auth.js';
 import { closeEditModal, deleteEdit, saveEdit } from './books.js';
 import { closeBookModal, renderAll, renderUserTab } from './ui.js';
 
@@ -13,6 +14,11 @@ function bindGlobalEvents() {
   document.getElementById('close-book-modal').addEventListener('click', closeBookModal);
   document.getElementById('book-detail-modal').addEventListener('click', event => {
     if (event.target === event.currentTarget) closeBookModal();
+  });
+
+  document.getElementById('admin-toggle-btn').addEventListener('click', async () => {
+    await toggleAdminAccess();
+    renderAll();
   });
 
   document.querySelectorAll('#main-nav button').forEach(button => {
@@ -34,8 +40,15 @@ function bindGlobalEvents() {
 async function bootstrap() {
   try {
     await initializeDatabase();
+    bindAuthStateListener(async isAdmin => {
+      if (isAdmin) await seedIfEmpty();
+      await loadAll();
+      renderAll();
+    });
+    await syncAdminState();
     await seedIfEmpty();
     await loadAll();
+    updateAdminUi();
     bindGlobalEvents();
   } catch (error) {
     document.getElementById('loading').classList.remove('show');
@@ -44,4 +57,5 @@ async function bootstrap() {
 }
 
 renderAll();
+updateAdminUi();
 bootstrap();

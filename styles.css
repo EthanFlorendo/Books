@@ -1082,6 +1082,38 @@ body:has(#tab-tony.active) nav button[data-tab="tony"].active {
   margin: -4px 0 12px;
 }
 
+.admin-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  width: min(1100px, calc(100% - 36px));
+  margin: 0 auto 28px;
+  padding: 14px 18px;
+  border: 1px solid var(--theme-line);
+  background: var(--theme-panel);
+  box-shadow: var(--shadow-md);
+}
+
+.admin-toolbar .btn.is-unlocked {
+  background: color-mix(in srgb, var(--theme-accent) 32%, #101419);
+}
+
+#admin-status-text {
+  color: var(--theme-muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-locked-note {
+  padding: 8px 4px;
+  color: var(--theme-muted);
+  font-size: 0.84rem;
+  line-height: 1.7;
+}
+
 .sort-control {
   display: inline-flex;
   align-items: center;
