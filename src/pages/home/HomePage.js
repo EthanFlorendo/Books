@@ -18,16 +18,15 @@ export function renderHomePage() {
     <div id="loading">Loading...</div>
 
     <header class="site-header">
-      <div class="site-header-top">
-        <h1>The Reading League</h1>
-        <div id="admin-toolbar-region">
-          ${renderAdminToolbar({ isAdmin: false })}
-        </div>
-      </div>
+      <h1>The Reading League</h1>
       <p class="subtitle">A Competitive Reading Tracker</p>
     </header>
 
     ${renderNavbar(DEFAULT_TAB)}
+
+    <div id="admin-toolbar-region">
+      ${renderAdminToolbar({ isAdmin: false })}
+    </div>
 
     <main class="site-main">
       <section id="tab-stats" class="tab-content active">

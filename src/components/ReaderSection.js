@@ -7,7 +7,7 @@ function renderAdminForm(reader, isAdmin) {
   if (!isAdmin) {
     return `
       <div class="admin-locked-note">
-        Editing is locked. Use the Login button in the top right to unlock add, edit, and delete controls.
+        Editing is locked. Use the admin button above to unlock add, edit, and delete controls.
       </div>
     `;
   }
@@ -105,7 +105,7 @@ export function renderReaderSection({ reader, stats, books, sortBy, isAdmin, isF
 
     <div class="add-form-toggle ${isFormOpen ? 'open' : ''}" id="${reader}-toggle">
       <span>${isAdmin ? 'Add a Book' : 'Admin Locked'}</span>
-      <span class="toggle-arrow">${isAdmin ? 'Open' : 'Login'}</span>
+      <span class="toggle-arrow">${isAdmin ? 'Open' : 'Unlock'}</span>
     </div>
     <div class="add-form-body ${isFormOpen ? 'open' : ''}" id="${reader}-form-body">
       ${renderAdminForm(reader, isAdmin)}

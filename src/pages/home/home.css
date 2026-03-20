@@ -26,26 +26,6 @@
   text-align: center;
 }
 
-.site-header-top {
-  position: relative;
-  width: min(1180px, calc(100% - 24px));
-  margin: 0 auto;
-}
-
-.site-header-top h1 {
-  margin: 0;
-  white-space: nowrap;
-}
-
-#admin-toolbar-region {
-  position: absolute;
-  top: 50%;
-  right: -100px;
-  transform: translateY(-50%);
-  width: auto;
-  margin: 0;
-}
-
 .site-header::before,
 .site-header::after {
   content: '';
@@ -229,19 +209,6 @@ h1 {
 }
 
 @media (max-width: 700px) {
-  .site-header-top {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-
-  .site-header-top h1,
-  #admin-toolbar-region {
-    position: static;
-    transform: none;
-    justify-self: center;
-  }
-
   #main-nav {
     justify-content: flex-start;
     overflow-x: auto;
