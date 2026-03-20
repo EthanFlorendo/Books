@@ -71,8 +71,8 @@ export function compareBooksForSort(sortBy, a, b) {
         || compareStrings(a.title, b.title)
         || compareNumbers(toTimeValue(getBookSortDate(b)), toTimeValue(getBookSortDate(a)));
     case 'completion':
-      return compareNumbers(getCompletionRank(b), getCompletionRank(a))
-        || compareNumbers(getCompletionPercent(b), getCompletionPercent(a))
+      return compareNumbers(getCompletionPercent(b), getCompletionPercent(a))
+        || compareNumbers(getCompletionRank(b), getCompletionRank(a))
         || compareStrings(a.title, b.title);
     case 'date':
     default:
