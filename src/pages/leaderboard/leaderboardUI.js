@@ -81,6 +81,22 @@ export function compareBooksForSort(sortBy, a, b) {
   }
 }
 
+export function comparePlannerEntriesForSort(sortBy, a, b) {
+  switch (sortBy) {
+    case 'author':
+      return compareStrings(a.author, b.author)
+        || compareStrings(a.title, b.title);
+    case 'date':
+      return compareNumbers(toTimeValue(b.created_at), toTimeValue(a.created_at))
+        || compareStrings(a.title, b.title);
+    case 'rating':
+    case 'completion':
+    default:
+      return compareStrings(a.title, b.title)
+        || compareStrings(a.author, b.author);
+  }
+}
+
 export function buildBookDetailViewModel({ book, details, errorMessage = '' }) {
   const doc = details?.doc || null;
   const completionPercent = book.total_pages > 0
@@ -88,7 +104,8 @@ export function buildBookDetailViewModel({ book, details, errorMessage = '' }) {
     : 0;
 
   const metaMarkup = [
-    `<span class="book-modal-tag status-tag">${escapeHtml(book.status)}</span>`,
+    book.entryKind === 'planner' ? '<span class="book-modal-tag status-tag">Planner</span>' : '',
+    book.status ? `<span class="book-modal-tag status-tag">${escapeHtml(book.status)}</span>` : '',
     `<span class="book-modal-tag">${escapeHtml(book.type || 'Novel')}</span>`,
     book.rating ? `<span class="book-modal-tag">Rating ${book.rating}/5</span>` : '',
     book.reread ? '<span class="book-modal-tag">Reread</span>' : '',

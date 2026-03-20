@@ -1,10 +1,11 @@
 import { ensureAdminAccess, subscribeToAuthChanges, syncAdminState, toggleAdminAccess } from './services/authService.js';
 import { fetchBooks, groupBooksByReader, seedBooksIfEmpty, verifyBooksTable } from './services/booksService.js';
+import { fetchPlannerEntries, groupPlannerEntriesByReader, verifyPlannerTable } from './services/plannerService.js';
 import { initializeSupabaseClient } from './services/supabaseClient.js';
-import { getAppState, setActiveTab, setBooksByReader, setReaderSort, toggleReaderFormOpen } from './state/appState.js';
+import { getAppState, setActiveTab, setBooksByReader, setPlannerByReader, setReaderSort, toggleReaderFormOpen } from './state/appState.js';
 import { DEFAULT_TAB, READERS } from './utils/constants.js';
 import { toTabKey } from './utils/helpers.js';
-import { bindAdminShellEvents, closeEditModal, handleSearchInput, hideSearchResults, openEditModal, renderAdminPage, saveNewBookForReader, setAdminPageHandlers } from './pages/admin/AdminPage.js';
+import { bindAdminShellEvents, closeEditModal, handleSearchInput, hideSearchResults, openEditModal, openPlannerEditModal, renderAdminPage, saveNewBookForReader, saveNewPlannerEntryForReader, setAdminPageHandlers } from './pages/admin/AdminPage.js';
 import { bindShellModalDismissals, bindHomeNavigation, mountHomePage, setLoadingVisible, showActiveTab } from './pages/home/index.js';
 import { closeBookDetailModal, renderLeaderboardPage, renderReaderPage, setLeaderboardPageHandlers } from './pages/leaderboard/LeaderboardPage.js';
 
@@ -28,11 +29,15 @@ function renderApp() {
 async function refreshBooksAndRender() {
   try {
     setLoadingVisible(true);
-    const books = await fetchBooks();
+    const [books, plannerEntries] = await Promise.all([
+      fetchBooks(),
+      fetchPlannerEntries(),
+    ]);
     setBooksByReader(groupBooksByReader(books));
+    setPlannerByReader(groupPlannerEntriesByReader(plannerEntries));
     renderApp();
   } catch (error) {
-    window.alert(`Could not load books: ${error.message}`);
+    window.alert(`Could not load reading data: ${error.message}`);
   } finally {
     setLoadingVisible(false);
   }
@@ -88,15 +93,18 @@ async function bootstrap() {
     setLeaderboardPageHandlers({
       onToggleAdminForm: handleReaderFormToggle,
       onAddBook: saveNewBookForReader,
+      onAddPlannerEntry: saveNewPlannerEntryForReader,
       onSearchInput: handleSearchInput,
       onHideSearch: hideSearchResults,
       onSortChange: handleSortChange,
       onEditBook: openEditModal,
+      onEditPlanner: openPlannerEditModal,
     });
 
     renderApp();
     initializeSupabaseClient();
     await verifyBooksTable();
+    await verifyPlannerTable();
 
     subscribeToAuthChanges(async isAdmin => {
       if (!isAdmin) {

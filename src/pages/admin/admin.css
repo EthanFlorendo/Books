@@ -51,9 +51,7 @@
   transition: transform 0.24s ease;
 }
 
-.add-form-toggle.open .toggle-arrow {
-  transform: rotate(180deg);
-}
+
 
 .add-form-body {
   display: none;
@@ -85,7 +83,7 @@
 }
 
 .search-wrap input {
-  padding: 13px 14px 13px 40px;
+  padding: 13px 14px;
   font-size: 0.9rem;
 }
 
@@ -252,7 +250,15 @@
 }
 
 .form-actions-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
   margin-top: 4px;
+}
+
+.form-actions-note {
+  color: var(--theme-muted);
+  font-size: 0.74rem;
 }
 
 .modal-overlay,

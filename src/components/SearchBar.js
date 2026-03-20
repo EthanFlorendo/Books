@@ -3,7 +3,6 @@ import { escapeHtml } from '../utils/helpers.js';
 export function renderSearchBar(reader) {
   return `
     <div class="search-wrap">
-      <span class="search-icon">Find</span>
       <input
         type="text"
         id="${reader}-search"

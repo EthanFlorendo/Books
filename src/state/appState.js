@@ -4,6 +4,10 @@ export function createEmptyBooksByReader() {
   return Object.fromEntries(READERS.map(reader => [reader, []]));
 }
 
+export function createEmptyPlannerByReader() {
+  return Object.fromEntries(READERS.map(reader => [reader, []]));
+}
+
 function createDefaultReaderMap(defaultValueFactory) {
   return Object.fromEntries(READERS.map(reader => [reader, defaultValueFactory(reader)]));
 }
@@ -11,6 +15,7 @@ function createDefaultReaderMap(defaultValueFactory) {
 const appState = {
   supabaseClient: null,
   booksByReader: createEmptyBooksByReader(),
+  plannerByReader: createEmptyPlannerByReader(),
   isAdmin: false,
   activeTab: DEFAULT_TAB,
   readerSorts: createDefaultReaderMap(() => DEFAULT_SORT),
@@ -34,6 +39,10 @@ export function getSupabaseClient() {
 
 export function setBooksByReader(booksByReader) {
   appState.booksByReader = booksByReader;
+}
+
+export function setPlannerByReader(plannerByReader) {
+  appState.plannerByReader = plannerByReader;
 }
 
 export function setAdminStatus(isAdmin) {
@@ -64,8 +73,8 @@ export function getSearchTimer(reader) {
   return appState.searchTimers[reader];
 }
 
-export function startEditSession(reader, bookId) {
-  appState.editSession = { reader, bookId };
+export function startEditSession(reader, entryId, kind = 'book') {
+  appState.editSession = { reader, entryId, kind };
 }
 
 export function clearEditSession() {

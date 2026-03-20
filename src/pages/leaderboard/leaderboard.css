@@ -526,6 +526,26 @@ body:has(#tab-tony.active) #main-nav button[data-tab='tony'].active {
   text-shadow: 0 0 18px color-mix(in srgb, var(--theme-accent) 20%, transparent);
 }
 
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 30px 0 12px;
+}
+
+.section-header .section-title,
+.section-header .list-toolbar {
+  margin: 0;
+}
+
+.section-note {
+  margin: -6px 0 14px;
+  color: var(--theme-muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+}
+
 .monthly-strip {
   position: relative;
   display: grid;
@@ -587,6 +607,11 @@ body:has(#tab-tony.active) #main-nav button[data-tab='tony'].active {
   font-size: 0.76rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.sort-control span {
+  white-space: nowrap;
 }
 
 .book-table-wrap {
@@ -707,10 +732,10 @@ tr.clickable-row {
   text-transform: uppercase;
 }
 
-#tab-ewan .section-title:first-of-type::before,
-#tab-isaac .section-title:first-of-type::before,
-#tab-ethan .section-title:first-of-type::before,
-#tab-tony .section-title:first-of-type::before {
+#tab-ewan .user-panel > .section-title:first-of-type::before,
+#tab-isaac .user-panel > .section-title:first-of-type::before,
+#tab-ethan .user-panel > .section-title:first-of-type::before,
+#tab-tony .user-panel > .section-title:first-of-type::before {
   position: absolute;
   left: 26px;
   top: -100px;
@@ -724,10 +749,10 @@ tr.clickable-row {
   white-space: nowrap;
 }
 
-#tab-ewan .section-title:first-of-type::after,
-#tab-isaac .section-title:first-of-type::after,
-#tab-ethan .section-title:first-of-type::after,
-#tab-tony .section-title:first-of-type::after {
+#tab-ewan .user-panel > .section-title:first-of-type::after,
+#tab-isaac .user-panel > .section-title:first-of-type::after,
+#tab-ethan .user-panel > .section-title:first-of-type::after,
+#tab-tony .user-panel > .section-title:first-of-type::after {
   content: '';
   position: absolute;
   left: 26px;
@@ -739,22 +764,22 @@ tr.clickable-row {
   opacity: 0.65;
 }
 
-#tab-ewan .section-title:first-of-type::before {
+#tab-ewan .user-panel > .section-title:first-of-type::before {
   content: 'Ash, Steel, and Empire';
   color: rgba(219, 226, 234, 0.68);
 }
 
-#tab-isaac .section-title:first-of-type::before {
+#tab-isaac .user-panel > .section-title:first-of-type::before {
   content: 'Traveller of the Cosmere';
   color: rgba(217, 180, 87, 0.62);
 }
 
-#tab-ethan .section-title:first-of-type::before {
+#tab-ethan .user-panel > .section-title:first-of-type::before {
   content: 'Silver Lines, Living Light';
   color: rgba(223, 251, 255, 0.66);
 }
 
-#tab-tony .section-title:first-of-type::before {
+#tab-tony .user-panel > .section-title:first-of-type::before {
   content: 'Color, Breath, and Splendor';
   color: rgba(255, 217, 137, 0.7);
 }
@@ -1045,6 +1070,11 @@ body:has(#tab-tony.active) .btn-danger {
   .monthly-strip,
   .book-table-wrap {
     border-radius: 0;
+  }
+
+  .section-header {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .list-toolbar {

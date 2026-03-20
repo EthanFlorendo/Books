@@ -18,12 +18,12 @@ export function renderEditModalShell() {
     dialogClassName: 'modal',
     closeButtonClassName: 'close-modal',
     closeButtonId: 'close-edit',
-    titleMarkup: '<h3>Edit Book</h3>',
+    titleMarkup: '<h3 id="edit-modal-title">Edit Entry</h3>',
     bodyMarkup: '<div id="edit-form-container"></div>',
     footerMarkup: `
       <div class="modal-actions">
         <button class="btn btn-primary" id="save-edit-btn" type="button">Save Changes</button>
-        <button class="btn btn-danger" id="delete-edit-btn" type="button">Delete Book</button>
+        <button class="btn btn-danger" id="delete-edit-btn" type="button">Delete Entry</button>
       </div>
     `,
   });

@@ -2,17 +2,20 @@ import { renderReaderSection } from '../../components/ReaderSection.js';
 import { getAppState } from '../../state/appState.js';
 import { fetchBookDetails, fetchCoverUrlByTitle } from '../../services/openLibraryService.js';
 import { getBookById, getLeaderboardStandings, getReaderStats } from '../../services/booksService.js';
+import { getPlannerEntryById } from '../../services/plannerService.js';
 import { READERS } from '../../utils/constants.js';
-import { buildBookDetailViewModel, compareBooksForSort, renderLeaderboardRows, renderStatsCards } from './leaderboardUI.js';
+import { buildBookDetailViewModel, compareBooksForSort, comparePlannerEntriesForSort, renderLeaderboardRows, renderStatsCards } from './leaderboardUI.js';
 import { getReaderPanel } from '../home/index.js';
 
 let leaderboardHandlers = {
   onToggleAdminForm: () => {},
   onAddBook: () => {},
+  onAddPlannerEntry: () => {},
   onSearchInput: () => {},
   onHideSearch: () => {},
   onSortChange: () => {},
   onEditBook: () => {},
+  onEditPlanner: () => {},
 };
 
 export function setLeaderboardPageHandlers(handlers) {
@@ -34,7 +37,7 @@ export function renderLeaderboardPage() {
 }
 
 export function renderReaderPage(reader) {
-  const { booksByReader, isAdmin, readerSorts, readerFormOpen } = getAppState();
+  const { booksByReader, plannerByReader, isAdmin, readerSorts, readerFormOpen } = getAppState();
   const panel = getReaderPanel(reader);
 
   if (!panel) return;
@@ -42,11 +45,13 @@ export function renderReaderPage(reader) {
   const stats = getReaderStats(booksByReader, reader);
   const sortBy = readerSorts[reader];
   const sortedBooks = [...stats.books].sort((a, b) => compareBooksForSort(sortBy, a, b));
+  const sortedPlanningEntries = [...(plannerByReader[reader] || [])].sort((a, b) => comparePlannerEntriesForSort(sortBy, a, b));
 
   panel.innerHTML = renderReaderSection({
     reader,
     stats,
     books: sortedBooks,
+    planningEntries: sortedPlanningEntries,
     sortBy,
     isAdmin,
     isFormOpen: readerFormOpen[reader],
@@ -73,6 +78,10 @@ function bindReaderEvents(reader, panel) {
     leaderboardHandlers.onAddBook(reader);
   });
 
+  panel.querySelector(`#${reader}-plan-add-btn`)?.addEventListener('click', () => {
+    leaderboardHandlers.onAddPlannerEntry(reader);
+  });
+
   panel.querySelector(`#${reader}-sort`)?.addEventListener('change', event => {
     leaderboardHandlers.onSortChange(reader, event.target.value);
   });
@@ -84,10 +93,24 @@ function bindReaderEvents(reader, panel) {
     });
   });
 
+  panel.querySelectorAll('[data-planner-row]').forEach(row => {
+    row.addEventListener('click', event => {
+      if (event.target.closest('[data-edit-plan]')) return;
+      openPlannerDetail(reader, row.dataset.planId);
+    });
+  });
+
   panel.querySelectorAll('[data-edit-book]').forEach(button => {
     button.addEventListener('click', event => {
       event.stopPropagation();
       leaderboardHandlers.onEditBook(button.dataset.reader, button.dataset.editBook);
+    });
+  });
+
+  panel.querySelectorAll('[data-edit-plan]').forEach(button => {
+    button.addEventListener('click', event => {
+      event.stopPropagation();
+      leaderboardHandlers.onEditPlanner(button.dataset.reader, button.dataset.editPlan);
     });
   });
 }
@@ -120,7 +143,18 @@ async function openBookDetail(reader, bookId) {
   const book = getBookById(booksByReader, reader, bookId);
 
   if (!book) return;
+  await openDetailView({ ...book, entryKind: 'book' });
+}
 
+async function openPlannerDetail(reader, entryId) {
+  const { plannerByReader } = getAppState();
+  const entry = getPlannerEntryById(plannerByReader, reader, entryId);
+
+  if (!entry) return;
+  await openDetailView({ ...entry, entryKind: 'planner' });
+}
+
+async function openDetailView(entry) {
   const modal = document.getElementById('book-detail-modal');
   const headerTitle = document.getElementById('bm-header-title');
   const title = document.getElementById('bm-title');
@@ -135,9 +169,9 @@ async function openBookDetail(reader, bookId) {
 
   modal?.classList.add('open');
 
-  if (headerTitle) headerTitle.textContent = book.title;
-  if (title) title.textContent = book.title;
-  if (author) author.textContent = `by ${book.author || 'Unknown'}`;
+  if (headerTitle) headerTitle.textContent = entry.title;
+  if (title) title.textContent = entry.title;
+  if (author) author.textContent = `by ${entry.author || 'Unknown'}`;
   if (meta) meta.innerHTML = '';
   if (progress) progress.innerHTML = '';
   if (cover) cover.innerHTML = '<div class="book-modal-cover-loading">Loading cover...</div>';
@@ -150,12 +184,12 @@ async function openBookDetail(reader, bookId) {
   if (notes) notes.innerHTML = '';
 
   try {
-    const details = await fetchBookDetails(book.title, book.author);
-    const viewModel = buildBookDetailViewModel({ book, details });
+    const details = await fetchBookDetails(entry.title, entry.author);
+    const viewModel = buildBookDetailViewModel({ book: entry, details });
     applyBookDetailViewModel(viewModel);
   } catch {
     const viewModel = buildBookDetailViewModel({
-      book,
+      book: entry,
       details: null,
       errorMessage: 'Could not connect to Open Library.',
     });

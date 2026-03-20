@@ -3,6 +3,7 @@ import { renderSearchResults } from '../../components/SearchBar.js';
 import { clearEditSession, getAppState, getSearchTimer, setReaderFormOpen, setSearchTimer, startEditSession } from '../../state/appState.js';
 import { ensureAdminAccess } from '../../services/authService.js';
 import { addBook, deleteBook, getBookById, updateBook } from '../../services/booksService.js';
+import { addPlannerEntry, deletePlannerEntry, getPlannerEntryById, updatePlannerEntry } from '../../services/plannerService.js';
 import { searchOpenLibrary, validateLiterature } from '../../services/openLibraryService.js';
 import { BOOK_STATUSES, BOOK_TYPES } from '../../utils/constants.js';
 import { escapeHtml, parseInteger, renderSelectOptions } from '../../utils/helpers.js';
@@ -53,6 +54,15 @@ function buildBookPayloadFromReaderForm(reader) {
   };
 }
 
+function buildPlannerPayloadFromReaderForm(reader) {
+  return {
+    reader,
+    title: getReaderFieldValue(reader, 'title'),
+    author: getReaderFieldValue(reader, 'author'),
+    type: getReaderFieldValue(reader, 'type') || 'Novel',
+  };
+}
+
 function buildBookPayloadFromEditForm() {
   const getValue = fieldName => document.getElementById(`edit-${fieldName}`)?.value.trim() || '';
 
@@ -71,8 +81,18 @@ function buildBookPayloadFromEditForm() {
   };
 }
 
-function setAddButtonState(reader, { disabled, label }) {
-  const button = document.getElementById(`${reader}-add-btn`);
+function buildPlannerPayloadFromEditForm() {
+  const getValue = fieldName => document.getElementById(`edit-${fieldName}`)?.value.trim() || '';
+
+  return {
+    title: getValue('title'),
+    author: getValue('author'),
+    type: getValue('type') || 'Novel',
+  };
+}
+
+function setActionButtonState(reader, buttonId, { disabled, label }) {
+  const button = document.getElementById(`${reader}-${buttonId}`);
   if (!button) return;
 
   button.disabled = disabled;
@@ -161,7 +181,7 @@ export async function saveNewBookForReader(reader) {
   }
 
   try {
-    setAddButtonState(reader, { disabled: true, label: 'Validating...' });
+    setActionButtonState(reader, 'add-btn', { disabled: true, label: 'Validating...' });
 
     const isValidBook = await validateLiterature(bookPayload.title, bookPayload.author);
     if (!isValidBook) {
@@ -169,7 +189,7 @@ export async function saveNewBookForReader(reader) {
       return false;
     }
 
-    setAddButtonState(reader, { disabled: true, label: 'Saving...' });
+    setActionButtonState(reader, 'add-btn', { disabled: true, label: 'Saving...' });
     await addBook(bookPayload);
     setReaderFormOpen(reader, false);
     await adminHandlers.onRefreshData();
@@ -179,11 +199,43 @@ export async function saveNewBookForReader(reader) {
     window.alert(`Save failed: ${error.message}`);
     return false;
   } finally {
-    setAddButtonState(reader, { disabled: false, label: 'Add to List' });
+    setActionButtonState(reader, 'add-btn', { disabled: false, label: 'Add to List' });
   }
 }
 
-function renderEditFormMarkup(book) {
+export async function saveNewPlannerEntryForReader(reader) {
+  if (!(await ensureAdminAccess('add a planner entry'))) return false;
+
+  const plannerPayload = buildPlannerPayloadFromReaderForm(reader);
+  if (!plannerPayload.title || !plannerPayload.author) {
+    window.alert('Title and Author are required.');
+    return false;
+  }
+
+  try {
+    setActionButtonState(reader, 'plan-add-btn', { disabled: true, label: 'Validating...' });
+
+    const isValidBook = await validateLiterature(plannerPayload.title, plannerPayload.author);
+    if (!isValidBook) {
+      window.alert(`"${plannerPayload.title}" could not be found in Open Library. Please check the title and author, or use the search bar above to find the correct book.`);
+      return false;
+    }
+
+    setActionButtonState(reader, 'plan-add-btn', { disabled: true, label: 'Saving...' });
+    await addPlannerEntry(plannerPayload);
+    setReaderFormOpen(reader, false);
+    await adminHandlers.onRefreshData();
+
+    return true;
+  } catch (error) {
+    window.alert(`Planner save failed: ${error.message}`);
+    return false;
+  } finally {
+    setActionButtonState(reader, 'plan-add-btn', { disabled: false, label: 'Add to Planner' });
+  }
+}
+
+function renderBookEditFormMarkup(book) {
   return `
     <div class="edit-form-grid">
       <div class="field-group">
@@ -237,6 +289,25 @@ function renderEditFormMarkup(book) {
   `;
 }
 
+function renderPlannerEditFormMarkup(entry) {
+  return `
+    <div class="edit-form-grid">
+      <div class="field-group">
+        <label>Title</label>
+        <input type="text" id="edit-title" value="${escapeHtml(entry.title)}">
+      </div>
+      <div class="field-group">
+        <label>Author</label>
+        <input type="text" id="edit-author" value="${escapeHtml(entry.author || '')}">
+      </div>
+      <div class="field-group">
+        <label>Type</label>
+        <select id="edit-type">${renderSelectOptions(BOOK_TYPES, entry.type || 'Novel')}</select>
+      </div>
+    </div>
+  `;
+}
+
 export async function openEditModal(reader, bookId) {
   if (!(await ensureAdminAccess('edit books'))) return false;
 
@@ -244,8 +315,23 @@ export async function openEditModal(reader, bookId) {
   const book = getBookById(booksByReader, reader, bookId);
   if (!book) return false;
 
-  startEditSession(reader, bookId);
-  document.getElementById('edit-form-container').innerHTML = renderEditFormMarkup(book);
+  startEditSession(reader, bookId, 'book');
+  document.getElementById('edit-modal-title').textContent = 'Edit Book';
+  document.getElementById('edit-form-container').innerHTML = renderBookEditFormMarkup(book);
+  document.getElementById('edit-modal')?.classList.add('open');
+  return true;
+}
+
+export async function openPlannerEditModal(reader, entryId) {
+  if (!(await ensureAdminAccess('edit planner entries'))) return false;
+
+  const { plannerByReader } = getAppState();
+  const entry = getPlannerEntryById(plannerByReader, reader, entryId);
+  if (!entry) return false;
+
+  startEditSession(reader, entryId, 'planner');
+  document.getElementById('edit-modal-title').textContent = 'Edit Planner Entry';
+  document.getElementById('edit-form-container').innerHTML = renderPlannerEditFormMarkup(entry);
   document.getElementById('edit-modal')?.classList.add('open');
   return true;
 }
@@ -262,7 +348,11 @@ async function saveEditChanges() {
   if (!editSession) return false;
 
   try {
-    await updateBook(editSession.bookId, buildBookPayloadFromEditForm());
+    if (editSession.kind === 'planner') {
+      await updatePlannerEntry(editSession.entryId, buildPlannerPayloadFromEditForm());
+    } else {
+      await updateBook(editSession.entryId, buildBookPayloadFromEditForm());
+    }
     closeEditModal();
     await adminHandlers.onRefreshData();
     return true;
@@ -273,14 +363,18 @@ async function saveEditChanges() {
 }
 
 async function deleteCurrentEdit() {
-  if (!(await ensureAdminAccess('delete books'))) return false;
+  if (!(await ensureAdminAccess('delete entries'))) return false;
 
   const { editSession } = getAppState();
   if (!editSession) return false;
-  if (!window.confirm('Delete this book?')) return false;
+  if (!window.confirm('Delete this entry?')) return false;
 
   try {
-    await deleteBook(editSession.bookId);
+    if (editSession.kind === 'planner') {
+      await deletePlannerEntry(editSession.entryId);
+    } else {
+      await deleteBook(editSession.entryId);
+    }
     closeEditModal();
     await adminHandlers.onRefreshData();
     return true;

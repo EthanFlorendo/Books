@@ -1,6 +1,6 @@
 import { BOOK_STATUSES, BOOK_TYPES, SORT_OPTIONS } from '../utils/constants.js';
 import { renderSelectOptions } from '../utils/helpers.js';
-import { renderBookCardRow } from './BookCard.js';
+import { renderBookCardRow, renderPlannerCardRow } from './BookCard.js';
 import { renderSearchBar } from './SearchBar.js';
 
 function renderAdminForm(reader) {
@@ -56,14 +56,16 @@ function renderAdminForm(reader) {
       </div>
       <div class="full form-actions-row">
         <button class="btn btn-primary" id="${reader}-add-btn" type="button">Add to List</button>
+        <button class="btn btn-primary" id="${reader}-plan-add-btn" type="button">Add to Planner</button>
       </div>
+      <div class="full form-actions-note">Planner entries save only title, author, and type.</div>
     </div>
   `;
 }
 
-export function renderReaderSection({ reader, stats, books, sortBy, isAdmin, isFormOpen }) {
+function renderBooksTable({ reader, books, isAdmin, emptyMessage }) {
   const tableMarkup = books.length === 0
-    ? '<div class="no-books">No books recorded yet.</div>'
+    ? `<div class="no-books">${emptyMessage}</div>`
     : `
       <table>
         <thead>
@@ -87,6 +89,54 @@ export function renderReaderSection({ reader, stats, books, sortBy, isAdmin, isF
     `;
 
   return `
+    <div class="book-table-wrap">
+      ${tableMarkup}
+    </div>
+  `;
+}
+
+function renderPlannerTable({ reader, entries, isAdmin }) {
+  const tableMarkup = entries.length === 0
+    ? '<div class="no-books">No books in the planner yet.</div>'
+    : `
+      <table>
+        <thead>
+          <tr>
+            <th style="width:58px"></th>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Type</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${entries.map(entry => renderPlannerCardRow({ reader, entry, isAdmin })).join('')}
+        </tbody>
+      </table>
+    `;
+
+  return `
+    <div class="book-table-wrap">
+      ${tableMarkup}
+    </div>
+  `;
+}
+
+export function renderReaderSection({ reader, stats, books, planningEntries, sortBy, isAdmin, isFormOpen }) {
+  const readingListMarkup = renderBooksTable({
+    reader,
+    books,
+    isAdmin,
+    emptyMessage: 'No books recorded yet.',
+  });
+
+  const planningMarkup = renderPlannerTable({
+    reader,
+    entries: planningEntries,
+    isAdmin,
+  });
+
+  return `
     <div class="section-title">This Month</div>
     <div class="monthly-strip">
       <div class="monthly-cell"><div class="mc-val">${stats.monthlyCompleted.length}</div><div class="mc-lbl">Completed</div></div>
@@ -97,7 +147,7 @@ export function renderReaderSection({ reader, stats, books, sortBy, isAdmin, isF
 
     ${isAdmin ? `
       <div class="add-form-toggle ${isFormOpen ? 'open' : ''}" id="${reader}-toggle">
-        <span>Add a Book</span>
+        <span>Add an Entry</span>
         <span class="toggle-arrow">Open</span>
       </div>
       <div class="add-form-body ${isFormOpen ? 'open' : ''}" id="${reader}-form-body">
@@ -105,20 +155,23 @@ export function renderReaderSection({ reader, stats, books, sortBy, isAdmin, isF
       </div>
     ` : ''}
 
-    <div class="section-title">Reading List</div>
-    <div class="list-toolbar">
-      <label class="sort-control" for="${reader}-sort">
-        <span>Sort By</span>
-        <select id="${reader}-sort">
-          ${SORT_OPTIONS.map(option => `
-            <option value="${option.value}" ${sortBy === option.value ? 'selected' : ''}>${option.label}</option>
-          `).join('')}
-        </select>
-      </label>
+    <div class="section-header">
+      <div class="section-title">Reading List</div>
+      <div class="list-toolbar">
+        <label class="sort-control" for="${reader}-sort">
+          <span>Sort By</span>
+          <select id="${reader}-sort">
+            ${SORT_OPTIONS.map(option => `
+              <option value="${option.value}" ${sortBy === option.value ? 'selected' : ''}>${option.label}</option>
+            `).join('')}
+          </select>
+        </label>
+      </div>
     </div>
 
-    <div class="book-table-wrap">
-      ${tableMarkup}
-    </div>
+    ${readingListMarkup}
+
+    <div class="section-title">Planning to Read</div>
+    ${planningMarkup}
   `;
 }
