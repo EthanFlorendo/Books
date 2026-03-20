@@ -1,5 +1,3 @@
-import { renderAdminToolbar } from '../../components/AdminToolbar.js';
-import { renderFooter } from '../../components/Footer.js';
 import { renderBookDetailModalShell, renderEditModalShell } from '../../components/Modal.js';
 import { renderNavbar } from '../../components/Navbar.js';
 import { DEFAULT_TAB, READERS } from '../../utils/constants.js';
@@ -24,10 +22,6 @@ export function renderHomePage() {
 
     ${renderNavbar(DEFAULT_TAB)}
 
-    <div id="admin-toolbar-region">
-      ${renderAdminToolbar({ isAdmin: false })}
-    </div>
-
     <main class="site-main">
       <section id="tab-stats" class="tab-content active">
         <div class="leaderboard">
@@ -42,6 +36,5 @@ export function renderHomePage() {
 
     ${renderEditModalShell()}
     ${renderBookDetailModalShell()}
-    ${renderFooter()}
   `;
 }

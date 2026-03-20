@@ -38,7 +38,7 @@ export function bindShellModalDismissals({ onCloseEditModal, onCloseBookModal })
 }
 
 export function showActiveTab(tab) {
-  document.querySelectorAll('#main-nav button').forEach(button => {
+  document.querySelectorAll('#main-nav button[data-tab]').forEach(button => {
     button.classList.toggle('active', button.dataset.tab === tab);
   });
 

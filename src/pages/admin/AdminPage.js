@@ -23,11 +23,11 @@ export function bindAdminShellEvents() {
 }
 
 export function renderAdminPage() {
-  const toolbarRegion = document.getElementById('admin-toolbar-region');
-  if (!toolbarRegion) return;
+  const adminRegion = document.getElementById('nav-admin-region');
+  if (!adminRegion) return;
 
-  toolbarRegion.innerHTML = renderAdminToolbar({ isAdmin: getAppState().isAdmin });
-  toolbarRegion.querySelector('#admin-toggle-btn')?.addEventListener('click', async () => {
+  adminRegion.innerHTML = renderAdminToolbar({ isAdmin: getAppState().isAdmin });
+  adminRegion.querySelector('#admin-toggle-btn')?.addEventListener('click', async () => {
     await adminHandlers.onToggleAdmin();
   });
 }

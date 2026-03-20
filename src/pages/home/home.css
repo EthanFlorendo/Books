@@ -90,6 +90,16 @@ h1 {
   box-shadow: var(--shadow-md);
 }
 
+#nav-admin-region {
+  display: flex;
+  align-items: center;
+  margin-left: 0px;
+}
+
+#nav-admin-region:empty {
+  display: none;
+}
+
 #main-nav button {
   position: relative;
   padding: 12px 20px;
@@ -174,6 +184,53 @@ h1 {
   color: #f07cc5;
 }
 
+#main-nav .nav-admin-button {
+  border-color: rgba(223, 230, 238, 0.34);
+  background:
+    linear-gradient(180deg, rgba(248, 250, 252, 0.94), rgba(225, 232, 239, 0.88)),
+    rgba(235, 240, 245, 0.9);
+  color: #203244;
+  box-shadow:
+    0 12px 24px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    0 0 0 1px rgba(223, 230, 238, 0.08);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+#main-nav .nav-admin-button::after {
+  background: linear-gradient(90deg, transparent, rgba(125, 211, 252, 0.62), transparent);
+}
+
+#main-nav .nav-admin-button:hover,
+#main-nav .nav-admin-button:focus-visible {
+  color: #152b3d;
+  border-color: rgba(223, 230, 238, 0.5);
+  background:
+    linear-gradient(180deg, rgba(252, 253, 255, 0.96), rgba(232, 239, 246, 0.92)),
+    rgba(239, 244, 249, 0.94);
+  box-shadow:
+    0 14px 26px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.84),
+    0 0 18px rgba(125, 211, 252, 0.1);
+}
+
+#main-nav .nav-admin-button.is-unlocked {
+  border-color: rgba(179, 205, 224, 0.48);
+  background:
+    linear-gradient(180deg, rgba(247, 251, 254, 0.95), rgba(221, 233, 242, 0.9)),
+    rgba(231, 240, 247, 0.92);
+  color: #1a3246;
+  box-shadow:
+    0 0 0 1px rgba(125, 211, 252, 0.14),
+    0 14px 28px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+}
+
+#main-nav .nav-admin-button.is-unlocked::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
 .tab-content {
   display: none;
 }
@@ -182,36 +239,14 @@ h1 {
   display: block;
 }
 
-.site-footer {
-  width: min(1100px, calc(100% - 36px));
-  margin: 18px auto 36px;
-  padding: 18px 22px;
-  border: 1px solid rgba(223, 230, 238, 0.08);
-  background: rgba(15, 18, 24, 0.5);
-  box-shadow: var(--shadow-md);
-  text-align: center;
-}
-
-.site-footer-title {
-  color: var(--mist);
-  font-family: Georgia, 'Times New Roman', Times, serif;
-  font-size: 0.92rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.site-footer-copy {
-  margin-top: 8px;
-  color: var(--mist-dim);
-  font-size: 0.74rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
 @media (max-width: 700px) {
   #main-nav {
     justify-content: flex-start;
     overflow-x: auto;
+  }
+
+  #nav-admin-region {
+    margin-left: 0;
   }
 
   #main-nav button {

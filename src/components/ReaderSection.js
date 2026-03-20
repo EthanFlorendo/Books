@@ -3,15 +3,7 @@ import { renderSelectOptions } from '../utils/helpers.js';
 import { renderBookCardRow } from './BookCard.js';
 import { renderSearchBar } from './SearchBar.js';
 
-function renderAdminForm(reader, isAdmin) {
-  if (!isAdmin) {
-    return `
-      <div class="admin-locked-note">
-        Editing is locked. Use the admin button above to unlock add, edit, and delete controls.
-      </div>
-    `;
-  }
-
+function renderAdminForm(reader) {
   return `
     ${renderSearchBar(reader)}
     <div class="form-grid">
@@ -103,13 +95,15 @@ export function renderReaderSection({ reader, stats, books, sortBy, isAdmin, isF
       <div class="monthly-cell"><div class="mc-val">${stats.books.length}</div><div class="mc-lbl">Total Books</div></div>
     </div>
 
-    <div class="add-form-toggle ${isFormOpen ? 'open' : ''}" id="${reader}-toggle">
-      <span>${isAdmin ? 'Add a Book' : 'Admin Locked'}</span>
-      <span class="toggle-arrow">${isAdmin ? 'Open' : 'Unlock'}</span>
-    </div>
-    <div class="add-form-body ${isFormOpen ? 'open' : ''}" id="${reader}-form-body">
-      ${renderAdminForm(reader, isAdmin)}
-    </div>
+    ${isAdmin ? `
+      <div class="add-form-toggle ${isFormOpen ? 'open' : ''}" id="${reader}-toggle">
+        <span>Add a Book</span>
+        <span class="toggle-arrow">Open</span>
+      </div>
+      <div class="add-form-body ${isFormOpen ? 'open' : ''}" id="${reader}-form-body">
+        ${renderAdminForm(reader)}
+      </div>
+    ` : ''}
 
     <div class="section-title">Reading List</div>
     <div class="list-toolbar">
