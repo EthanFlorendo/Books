@@ -310,6 +310,7 @@
 table {
   width: 100%;
   border-collapse: collapse;
+  color: var(--theme-text);
   font-size: 0.86rem;
 }
 
@@ -331,11 +332,23 @@ th {
 td {
   padding: 0;
   border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  color: var(--theme-text);
   vertical-align: middle;
 }
 
 td.padded {
   padding: 13px 12px;
+}
+
+.title-cell strong {
+  color: var(--theme-text);
+}
+
+.author-cell,
+.type-cell,
+.started-cell,
+.finished-cell {
+  color: var(--theme-muted);
 }
 
 tbody tr {
@@ -391,6 +404,27 @@ tr.clickable-row {
 
 .mobile-meta {
   display: none;
+}
+
+body[data-theme='dark'] .book-table-wrap th {
+  color: rgba(220, 232, 255, 0.9);
+}
+
+body[data-theme='dark'] .book-table-wrap td,
+body[data-theme='dark'] .book-table-wrap .title-cell strong,
+body[data-theme='dark'] .book-table-wrap .progress-text,
+body[data-theme='dark'] .book-table-wrap .mobile-meta,
+body[data-theme='dark'] .book-table-wrap .book-cover-placeholder,
+body[data-theme='dark'] .book-table-wrap .no-books,
+body[data-theme='dark'] .book-table-wrap .reread-flag {
+  color: var(--mist);
+}
+
+body[data-theme='dark'] .book-table-wrap .author-cell,
+body[data-theme='dark'] .book-table-wrap .type-cell,
+body[data-theme='dark'] .book-table-wrap .started-cell,
+body[data-theme='dark'] .book-table-wrap .finished-cell {
+  color: rgba(234, 240, 248, 0.84);
 }
 
 @media (max-width: 920px) {
