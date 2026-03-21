@@ -1,5 +1,6 @@
 import { renderAdminToolbar } from '../../components/AdminToolbar.js';
 import { renderSearchResults } from '../../components/SearchBar.js';
+import { isDarkTheme, toggleTheme } from '../../services/themeService.js';
 import { clearEditSession, getAppState, getSearchTimer, setReaderFormOpen, setSearchTimer, startEditSession } from '../../state/appState.js';
 import { ensureAdminAccess } from '../../services/authService.js';
 import { addBook, deleteBook, getBookById, updateBook } from '../../services/booksService.js';
@@ -27,9 +28,16 @@ export function renderAdminPage() {
   const adminRegion = document.getElementById('nav-admin-region');
   if (!adminRegion) return;
 
-  adminRegion.innerHTML = renderAdminToolbar({ isAdmin: getAppState().isAdmin });
+  adminRegion.innerHTML = renderAdminToolbar({
+    isAdmin: getAppState().isAdmin,
+    isDarkMode: isDarkTheme(),
+  });
   adminRegion.querySelector('#admin-toggle-btn')?.addEventListener('click', async () => {
     await adminHandlers.onToggleAdmin();
+  });
+  adminRegion.querySelector('#theme-toggle-btn')?.addEventListener('click', () => {
+    toggleTheme();
+    renderAdminPage();
   });
 }
 
@@ -199,7 +207,7 @@ export async function saveNewBookForReader(reader) {
     window.alert(`Save failed: ${error.message}`);
     return false;
   } finally {
-    setActionButtonState(reader, 'add-btn', { disabled: false, label: 'Add to List' });
+    setActionButtonState(reader, 'add-btn', { disabled: false, label: 'Add Book' });
   }
 }
 
@@ -231,7 +239,7 @@ export async function saveNewPlannerEntryForReader(reader) {
     window.alert(`Planner save failed: ${error.message}`);
     return false;
   } finally {
-    setActionButtonState(reader, 'plan-add-btn', { disabled: false, label: 'Add to Planner' });
+    setActionButtonState(reader, 'plan-add-btn', { disabled: false, label: 'Add to Queue' });
   }
 }
 

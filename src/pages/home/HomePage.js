@@ -13,17 +13,17 @@ function renderReaderTabs() {
 
 export function renderHomePage() {
   return `
-    <div id="loading">Loading...</div>
+    <div id="loading">Loading data...</div>
 
     <header class="site-header">
       <div id="nav-admin-home" class="site-header-admin-slot">
         <div id="nav-admin-region" class="site-header-admin" aria-live="polite"></div>
       </div>
-      <h1 class="site-title">
-        <span>The Reading</span>
-        <span>League</span>
-      </h1>
-      <p class="subtitle">A Competitive Reading Tracker</p>
+      <div class="site-header-copy">
+        <p class="site-kicker">Shared Reading Tracker</p>
+        <h1 class="site-title">Reading Dashboard</h1>
+        <p class="subtitle">Track monthly activity, current books, and reading plans in one place.</p>
+      </div>
     </header>
 
     ${renderNavbar(DEFAULT_TAB)}
@@ -31,7 +31,7 @@ export function renderHomePage() {
     <main class="site-main">
       <section id="tab-stats" class="tab-content active">
         <div class="leaderboard">
-          <h2>Monthly Standings</h2>
+          <h2>Monthly Activity</h2>
           <div id="leaderboard-list"></div>
         </div>
         <div class="stats-grid" id="stats-grid"></div>

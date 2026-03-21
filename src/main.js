@@ -2,6 +2,7 @@ import { ensureAdminAccess, subscribeToAuthChanges, syncAdminState, toggleAdminA
 import { fetchBooks, groupBooksByReader, seedBooksIfEmpty, verifyBooksTable } from './services/booksService.js';
 import { fetchPlannerEntries, groupPlannerEntriesByReader, verifyPlannerTable } from './services/plannerService.js';
 import { initializeSupabaseClient } from './services/supabaseClient.js';
+import { initializeTheme } from './services/themeService.js';
 import { getAppState, setActiveTab, setBooksByReader, setPlannerByReader, setReaderSort, toggleReaderFormOpen } from './state/appState.js';
 import { DEFAULT_TAB, READERS } from './utils/constants.js';
 import { toTabKey } from './utils/helpers.js';
@@ -75,6 +76,7 @@ async function handleAdminToggle() {
 
 async function bootstrap() {
   try {
+    initializeTheme();
     mountHomePage(document.getElementById('app'));
 
     bindHomeNavigation(handleTabChange);

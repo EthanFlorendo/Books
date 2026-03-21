@@ -55,10 +55,10 @@ function renderAdminForm(reader) {
         <input type="text" id="${reader}-notes" placeholder="Optional...">
       </div>
       <div class="full form-actions-row">
-        <button class="btn btn-primary" id="${reader}-add-btn" type="button">Add to List</button>
-        <button class="btn btn-primary" id="${reader}-plan-add-btn" type="button">Add to Planner</button>
+        <button class="btn btn-primary" id="${reader}-add-btn" type="button">Add Book</button>
+        <button class="btn btn-primary" id="${reader}-plan-add-btn" type="button">Add to Queue</button>
       </div>
-      <div class="full form-actions-note">Planner entries save only title, author, and type.</div>
+      <div class="full form-actions-note">Queue entries save only title, author, and type.</div>
     </div>
   `;
 }
@@ -97,7 +97,7 @@ function renderBooksTable({ reader, books, isAdmin, emptyMessage }) {
 
 function renderPlannerTable({ reader, entries, isAdmin }) {
   const tableMarkup = entries.length === 0
-    ? '<div class="no-books">No books in the planner yet.</div>'
+    ? '<div class="no-books">No books in the queue yet.</div>'
     : `
       <table>
         <thead>
@@ -123,11 +123,14 @@ function renderPlannerTable({ reader, entries, isAdmin }) {
 }
 
 export function renderReaderSection({ reader, stats, books, planningEntries, sortBy, isAdmin, isFormOpen }) {
+  const hasBooks = books.length > 0;
+  const hasPlanningEntries = planningEntries.length > 0;
+
   const readingListMarkup = renderBooksTable({
     reader,
     books,
     isAdmin,
-    emptyMessage: 'No books recorded yet.',
+    emptyMessage: 'No books added yet.',
   });
 
   const planningMarkup = renderPlannerTable({
@@ -137,41 +140,65 @@ export function renderReaderSection({ reader, stats, books, planningEntries, sor
   });
 
   return `
-    <div class="section-title">This Month</div>
-    <div class="monthly-strip">
-      <div class="monthly-cell"><div class="mc-val">${stats.monthlyCompleted.length}</div><div class="mc-lbl">Completed</div></div>
-      <div class="monthly-cell"><div class="mc-val">${stats.monthlyPages}</div><div class="mc-lbl">Pages Read</div></div>
-      <div class="monthly-cell"><div class="mc-val">${stats.finished.length}</div><div class="mc-lbl">Total Finished</div></div>
-      <div class="monthly-cell"><div class="mc-val">${stats.books.length}</div><div class="mc-lbl">Total Books</div></div>
+    <div class="reader-layout">
+      <section class="reader-block reader-block-hero">
+        <div class="reader-hero">
+          <div class="reader-hero-copy">
+            <div class="reader-eyebrow">Reader</div>
+            <h2 class="reader-name">${reader}</h2>
+            <p class="reader-subtitle">Progress, recent activity, and planned reads.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="reader-block">
+        <div class="section-title">This Month</div>
+        <div class="monthly-strip">
+          <div class="monthly-cell"><div class="mc-val">${stats.monthlyCompleted.length}</div><div class="mc-lbl">Completed</div></div>
+          <div class="monthly-cell"><div class="mc-val">${stats.monthlyPages}</div><div class="mc-lbl">Pages Read</div></div>
+          <div class="monthly-cell"><div class="mc-val">${stats.finished.length}</div><div class="mc-lbl">Total Finished</div></div>
+          <div class="monthly-cell"><div class="mc-val">${stats.books.length}</div><div class="mc-lbl">Total Books</div></div>
+        </div>
+      </section>
+
+      ${isAdmin ? `
+        <section class="reader-block reader-block-admin">
+          <div class="add-form-toggle ${isFormOpen ? 'open' : ''}" id="${reader}-toggle">
+            <span>Add an Entry</span>
+            <span class="toggle-arrow">${isFormOpen ? 'Hide' : 'Open'}</span>
+          </div>
+          <div class="add-form-body ${isFormOpen ? 'open' : ''}" id="${reader}-form-body">
+            ${renderAdminForm(reader)}
+          </div>
+        </section>
+      ` : ''}
+
+      ${hasBooks ? `
+        <section class="reader-block">
+          <div class="section-header">
+            <div class="section-title">Books</div>
+            <div class="list-toolbar">
+              <label class="sort-control" for="${reader}-sort">
+                <span>Sort</span>
+                <select id="${reader}-sort">
+                  ${SORT_OPTIONS.map(option => `
+                    <option value="${option.value}" ${sortBy === option.value ? 'selected' : ''}>${option.label}</option>
+                  `).join('')}
+                </select>
+              </label>
+            </div>
+          </div>
+
+          ${readingListMarkup}
+        </section>
+      ` : ''}
+
+      ${hasPlanningEntries ? `
+        <section class="reader-block">
+          <div class="section-title">Reading Queue</div>
+          ${planningMarkup}
+        </section>
+      ` : ''}
     </div>
-
-    ${isAdmin ? `
-      <div class="add-form-toggle ${isFormOpen ? 'open' : ''}" id="${reader}-toggle">
-        <span>Add an Entry</span>
-        <span class="toggle-arrow">Open</span>
-      </div>
-      <div class="add-form-body ${isFormOpen ? 'open' : ''}" id="${reader}-form-body">
-        ${renderAdminForm(reader)}
-      </div>
-    ` : ''}
-
-    <div class="section-header">
-      <div class="section-title">Reading List</div>
-      <div class="list-toolbar">
-        <label class="sort-control" for="${reader}-sort">
-          <span>Sort By</span>
-          <select id="${reader}-sort">
-            ${SORT_OPTIONS.map(option => `
-              <option value="${option.value}" ${sortBy === option.value ? 'selected' : ''}>${option.label}</option>
-            `).join('')}
-          </select>
-        </label>
-      </div>
-    </div>
-
-    ${readingListMarkup}
-
-    <div class="section-title">Planning to Read</div>
-    ${planningMarkup}
   `;
 }

@@ -6,12 +6,12 @@ export function renderSearchBar(reader) {
       <input
         type="text"
         id="${reader}-search"
-        placeholder="Search by title or author to autofill..."
+        placeholder="Search by title or author to autofill"
         autocomplete="off"
       >
       <div class="search-results" id="${reader}-search-results" style="display:none"></div>
     </div>
-    <div class="search-hint">Type to search Open Library and click a result to autofill the fields below</div>
+    <div class="search-hint">Search Open Library and choose a result to fill the fields below.</div>
   `;
 }
 

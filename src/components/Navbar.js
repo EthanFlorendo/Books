@@ -22,7 +22,7 @@ export function renderNavbar(activeTab) {
     <nav id="main-nav" aria-label="Primary">
       <div class="nav-primary-row">
         <div class="nav-group nav-group-primary">
-          ${renderNavButton('Standings', 'stats', activeTab === 'stats', 'primary')}
+          ${renderNavButton('Overview', 'stats', activeTab === 'stats', 'primary')}
         </div>
         <div class="nav-group nav-group-admin" id="nav-admin-dock"></div>
       </div>

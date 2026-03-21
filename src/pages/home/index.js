@@ -57,34 +57,14 @@ export function getReaderPanel(reader) {
 }
 
 function bindAdminDocking() {
-  const nav = document.getElementById('main-nav');
   const homeDock = document.getElementById('nav-admin-home');
-  const navDock = document.getElementById('nav-admin-dock');
   const adminRegion = document.getElementById('nav-admin-region');
 
-  if (!nav || !homeDock || !navDock || !adminRegion) {
+  if (!homeDock || !adminRegion) {
     return;
   }
 
-  const getStickyTop = () => {
-    const stickyTop = Number.parseFloat(window.getComputedStyle(nav).top);
-    return Number.isFinite(stickyTop) ? stickyTop : 0;
-  };
-
-  const syncAdminDock = () => {
-    const navRect = nav.getBoundingClientRect();
-    const isDockedInNav = window.scrollY > 0 && navRect.top <= getStickyTop() + 1;
-    const targetDock = isDockedInNav ? navDock : homeDock;
-
-    if (adminRegion.parentElement !== targetDock) {
-      targetDock.appendChild(adminRegion);
-    }
-
-    nav.classList.toggle('is-admin-docked', isDockedInNav);
-    adminRegion.classList.toggle('is-in-nav', isDockedInNav);
-  };
-
-  syncAdminDock();
-  window.addEventListener('scroll', syncAdminDock, { passive: true });
-  window.addEventListener('resize', syncAdminDock);
+  if (adminRegion.parentElement !== homeDock) {
+    homeDock.appendChild(adminRegion);
+  }
 }

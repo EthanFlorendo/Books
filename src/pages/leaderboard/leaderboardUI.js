@@ -14,8 +14,8 @@ export function renderLeaderboardRows(standings) {
     <div class="lb-row">
       <span class="lb-rank ${rankClasses[index] || ''}">${index + 1}</span>
       <span class="lb-name">${escapeHtml(row.reader)}</span>
-      <span class="lb-stat"><strong>${row.monthlyBooks}</strong> books this month</span>
-      <span class="lb-stat"><strong>${row.monthlyPages}</strong> pages this month</span>
+      <span class="lb-stat"><strong>${row.monthlyBooks}</strong> completed this month</span>
+      <span class="lb-stat"><strong>${row.monthlyPages}</strong> pages logged</span>
     </div>
   `).join('');
 }
@@ -24,14 +24,14 @@ export function renderStatsCards(readerStatsPairs) {
   return readerStatsPairs.map(({ reader, stats }) => {
     const currentBooksMarkup = stats.current.length
       ? stats.current.map(book => `<span class="current-book-tag">${escapeHtml(book.title)}</span>`).join('')
-      : '<em class="empty-current-books">Nothing current</em>';
+      : '<em class="empty-current-books">No active books</em>';
 
     return `
       <div class="reader-card">
         <h3>${escapeHtml(reader)}</h3>
-        <div class="stat-row"><span>Total Started</span><span class="stat-val">${stats.books.length}</span></div>
+        <div class="stat-row"><span>Total Books</span><span class="stat-val">${stats.books.length}</span></div>
         <div class="stat-row"><span>Completed</span><span class="stat-val">${stats.finished.length}</span></div>
-        <div class="stat-row"><span>Pages Read</span><span class="stat-val">${stats.allPages.toLocaleString()}</span></div>
+        <div class="stat-row"><span>Pages Logged</span><span class="stat-val">${stats.allPages.toLocaleString()}</span></div>
         <div class="stat-row"><span>Novels</span><span class="stat-val">${stats.byType.Novel}</span></div>
         <div class="stat-row"><span>Poetry</span><span class="stat-val">${stats.byType.Poetry}</span></div>
         <div class="stat-row"><span>Short Stories</span><span class="stat-val">${stats.byType['Short Story']}</span></div>
