@@ -60,7 +60,6 @@
   --theme-surface-a: rgba(255, 255, 255, 0.05);
   --theme-surface-b: rgba(255, 255, 255, 0.02);
   --theme-row-hover: rgba(125, 211, 252, 0.06);
-  --page-top-color: #223446;
   --page-background:
     radial-gradient(circle at top, rgba(58, 110, 165, 0.2), transparent 30%),
     radial-gradient(circle at 20% 20%, rgba(125, 211, 252, 0.12), transparent 22%),
@@ -76,7 +75,7 @@
 html {
   min-height: 100%;
   scroll-behavior: smooth;
-  background-color: var(--page-top-color);
+  background-color: #12161d;
   background-image: var(--page-background);
 }
 
@@ -84,7 +83,7 @@ body {
   position: relative;
   min-height: 100vh;
   min-height: 100dvh;
-  background-color: var(--page-top-color);
+  background-color: #12161d;
   background-image: var(--page-background);
   color: var(--ink);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
