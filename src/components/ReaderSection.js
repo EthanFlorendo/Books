@@ -152,12 +152,12 @@ export function renderReaderSection({ reader, stats, books, planningEntries, sor
       </section>
 
       <section class="reader-block">
-        <div class="section-title">This Month</div>
+        <div class="section-title">Overview</div>
         <div class="monthly-strip">
-          <div class="monthly-cell"><div class="mc-val">${stats.monthlyCompleted.length}</div><div class="mc-lbl">Completed</div></div>
-          <div class="monthly-cell"><div class="mc-val">${stats.monthlyPages}</div><div class="mc-lbl">Pages Read</div></div>
-          <div class="monthly-cell"><div class="mc-val">${stats.finished.length}</div><div class="mc-lbl">Total Finished</div></div>
+          <div class="monthly-cell"><div class="mc-val">${stats.allPages}</div><div class="mc-lbl">All Pages Read</div></div>
           <div class="monthly-cell"><div class="mc-val">${stats.books.length}</div><div class="mc-lbl">Total Books</div></div>
+          <div class="monthly-cell"><div class="mc-val">${stats.finished.length}</div><div class="mc-lbl">Total Finished</div></div>
+          <div class="monthly-cell"><div class="mc-val">${stats.current.length}</div><div class="mc-lbl">Currently Reading</div></div>
         </div>
       </section>
 
