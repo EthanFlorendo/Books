@@ -1,4 +1,5 @@
 import { renderBookDetailModalShell, renderEditModalShell } from '../../components/Modal.js';
+import { renderAdminLoginShell } from '../../components/AdminLoginOverlay.js';
 import { renderNavbar } from '../../components/Navbar.js';
 import { DEFAULT_TAB, READERS } from '../../utils/constants.js';
 import { toTabKey } from '../../utils/helpers.js';
@@ -42,5 +43,6 @@ export function renderHomePage() {
 
     ${renderEditModalShell()}
     ${renderBookDetailModalShell()}
+    ${renderAdminLoginShell()}
   `;
 }

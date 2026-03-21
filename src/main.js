@@ -1,4 +1,4 @@
-import { ensureAdminAccess, subscribeToAuthChanges, syncAdminState, toggleAdminAccess } from './services/authService.js';
+import { bindAdminLoginEvents, ensureAdminAccess, subscribeToAuthChanges, syncAdminState, toggleAdminAccess } from './services/authService.js';
 import { fetchBooks, groupBooksByReader, seedBooksIfEmpty, verifyBooksTable } from './services/booksService.js';
 import { fetchPlannerEntries, groupPlannerEntriesByReader, verifyPlannerTable } from './services/plannerService.js';
 import { initializeSupabaseClient } from './services/supabaseClient.js';
@@ -78,6 +78,7 @@ async function bootstrap() {
   try {
     initializeTheme();
     mountHomePage(document.getElementById('app'));
+    bindAdminLoginEvents();
 
     bindHomeNavigation(handleTabChange);
     bindShellModalDismissals({
