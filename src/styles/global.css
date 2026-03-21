@@ -90,9 +90,18 @@ body[data-theme='dark'] {
   --shadow-lg: 0 28px 60px rgba(0, 0, 0, 0.38);
   --shadow-md: 0 14px 32px rgba(0, 0, 0, 0.28);
   --glow: 0 0 0 1px rgba(103, 165, 255, 0.16), 0 18px 40px rgba(103, 165, 255, 0.12);
+  --theme-accent: #67a5ff;
+  --theme-accent-strong: #8ca0b5;
   --theme-highlight: rgba(255, 255, 255, 0.06);
+  --theme-text: #eaf0f8;
+  --theme-muted: #acb8c8;
+  --theme-line: rgba(148, 163, 184, 0.16);
+  --theme-line-strong: rgba(103, 165, 255, 0.28);
+  --theme-panel: rgba(15, 22, 31, 0.88);
+  --theme-panel-strong: rgba(19, 27, 38, 0.96);
   --theme-panel-soft: rgba(255, 255, 255, 0.03);
   --theme-input: rgba(11, 17, 25, 0.96);
+  --theme-glow: 0 0 0 1px rgba(103, 165, 255, 0.16), 0 18px 40px rgba(103, 165, 255, 0.12);
   --theme-button: linear-gradient(180deg, #8ea5ba, #6d8297);
   --theme-button-shadow: 0 12px 28px rgba(6, 9, 14, 0.46);
   --theme-button-hover: 0 18px 32px rgba(6, 9, 14, 0.52);
@@ -134,7 +143,7 @@ body[data-theme='dark'] {
 html {
   min-height: 100%;
   scroll-behavior: smooth;
-  background-color: #eef3f8;
+  background-color: var(--bg-black);
   background-image: var(--page-background);
 }
 
@@ -142,7 +151,7 @@ body {
   position: relative;
   min-height: 100vh;
   min-height: 100dvh;
-  background-color: #eef3f8;
+  background-color: var(--bg-black);
   background-image: var(--page-background);
   color: var(--ink);
   font-family: "Segoe UI Variable", Aptos, "Segoe UI", sans-serif;
