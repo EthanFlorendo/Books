@@ -16,7 +16,13 @@ export function renderHomePage() {
     <div id="loading">Loading...</div>
 
     <header class="site-header">
-      <h1>The Reading League</h1>
+      <div id="nav-admin-home" class="site-header-admin-slot">
+        <div id="nav-admin-region" class="site-header-admin" aria-live="polite"></div>
+      </div>
+      <h1 class="site-title">
+        <span>The Reading</span>
+        <span>League</span>
+      </h1>
       <p class="subtitle">A Competitive Reading Tracker</p>
     </header>
 

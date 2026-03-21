@@ -1,8 +1,16 @@
 import { READERS } from '../utils/constants.js';
 import { toTabKey } from '../utils/helpers.js';
 
-function renderNavButton(label, tabKey, isActive) {
-  return `<button class="${isActive ? 'active' : ''}" data-tab="${tabKey}" type="button">${label}</button>`;
+function renderNavButton(label, tabKey, isActive, variant = 'reader') {
+  const className = ['nav-tab-button', `nav-tab-button-${variant}`, isActive ? 'active' : '']
+    .filter(Boolean)
+    .join(' ');
+
+  return `
+    <button class="${className}" data-tab="${tabKey}" type="button">
+      <span class="nav-button-label">${label}</span>
+    </button>
+  `;
 }
 
 export function renderNavbar(activeTab) {
@@ -11,10 +19,16 @@ export function renderNavbar(activeTab) {
     .join('');
 
   return `
-    <nav id="main-nav">
-      ${renderNavButton('Standings', 'stats', activeTab === 'stats')}
-      ${readerButtons}
-      <div id="nav-admin-region" aria-live="polite"></div>
+    <nav id="main-nav" aria-label="Primary">
+      <div class="nav-primary-row">
+        <div class="nav-group nav-group-primary">
+          ${renderNavButton('Standings', 'stats', activeTab === 'stats', 'primary')}
+        </div>
+        <div class="nav-group nav-group-admin" id="nav-admin-dock"></div>
+      </div>
+      <div class="nav-group nav-group-readers" aria-label="Readers">
+        ${readerButtons}
+      </div>
     </nav>
   `;
 }
