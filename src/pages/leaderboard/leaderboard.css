@@ -1060,6 +1060,115 @@ body:has(#tab-tony.active) .btn-danger {
   }
 }
 
+@media (max-width: 700px) {
+  .book-table-wrap table,
+  .book-table-wrap tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .book-table-wrap thead {
+    display: none;
+  }
+
+  .book-table-wrap tbody tr {
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr);
+    gap: 10px 14px;
+    align-items: start;
+    padding: 14px;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)),
+      var(--theme-surface-b);
+  }
+
+  .book-table-wrap tbody tr + tr {
+    border-top: 1px solid var(--theme-line);
+  }
+
+  .book-table-wrap td,
+  .book-table-wrap td.padded,
+  .book-table-wrap .cover-cell {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    min-width: 0;
+    padding: 0 !important;
+    border-bottom: none;
+    background: transparent !important;
+    overflow-wrap: anywhere;
+  }
+
+  .book-table-wrap td:not(.cover-cell) {
+    grid-column: 2;
+    flex-direction: column;
+  }
+
+  .book-table-wrap td::before {
+    content: attr(data-label);
+    color: var(--theme-muted);
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .book-table-wrap .cover-cell {
+    grid-column: 1;
+    grid-row: 1 / span 4;
+    width: 52px;
+    justify-content: flex-start;
+  }
+
+  .book-table-wrap .title-cell {
+    grid-row: 1;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .book-table-wrap .title-cell::before,
+  .book-table-wrap .cover-cell::before,
+  .book-table-wrap .actions-cell::before {
+    content: none;
+  }
+
+  .book-table-wrap .title-cell strong {
+    line-height: 1.35;
+  }
+
+  .book-table-wrap .actions-cell {
+    grid-column: 1 / -1;
+    margin-top: 4px;
+  }
+
+  .book-table-wrap .actions-cell:empty {
+    display: none;
+  }
+
+  .book-table-wrap .actions-cell .btn-danger {
+    width: 100%;
+  }
+
+  .book-table-wrap .book-cover,
+  .book-table-wrap .book-cover-placeholder {
+    width: 52px;
+    height: 76px;
+  }
+
+  .book-table-wrap .progress-cell {
+    gap: 8px;
+  }
+
+  .book-table-wrap .progress-cell .progress-bar {
+    width: min(100%, 220px);
+  }
+
+  .book-table-wrap .progress-cell .progress-text {
+    margin-left: 0;
+  }
+}
+
 @media (max-width: 540px) {
   #tab-stats,
   .user-panel {
