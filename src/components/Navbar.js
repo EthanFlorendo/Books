@@ -12,7 +12,7 @@ export function renderNavbar(activeTab) {
 
   return `
     <nav id="main-nav">
-      ${renderNavButton('League Table', 'stats', activeTab === 'stats')}
+      ${renderNavButton('Standings', 'stats', activeTab === 'stats')}
       ${readerButtons}
       <div id="nav-admin-region" aria-live="polite"></div>
     </nav>
