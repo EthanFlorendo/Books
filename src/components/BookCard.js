@@ -5,6 +5,14 @@ function renderCoverPlaceholder(title) {
   return `<div class="book-cover-placeholder" data-fetch="${escapeHtml(title)}">Book</div>`;
 }
 
+function renderMobileMeta(items) {
+  const visibleItems = items.filter(Boolean);
+
+  if (visibleItems.length === 0) return '';
+
+  return `<span class="mobile-meta">${visibleItems.join('')}</span>`;
+}
+
 export function renderBookCardRow({ reader, book, isAdmin }) {
   const completionPercent = book.total_pages > 0
     ? Math.min(100, Math.round((book.pages / book.total_pages) * 100))
@@ -22,6 +30,16 @@ export function renderBookCardRow({ reader, book, isAdmin }) {
       <td class="padded title-cell" data-label="Title">
         <strong>${escapeHtml(book.title)}</strong>
         ${book.reread ? ' <span class="reread-flag" title="Reread">R</span>' : ''}
+        ${renderMobileMeta([
+          book.author ? `<span class="mobile-meta-item">${escapeHtml(book.author)}</span>` : '',
+          book.type ? `<span class="mobile-meta-item">${escapeHtml(book.type)}</span>` : '',
+          book.rating ? `<span class="mobile-meta-item mobile-meta-stars">${formatStarsMarkup(book.rating)}</span>` : '',
+          book.date_finished
+            ? `<span class="mobile-meta-item">${formatDate(book.date_finished)}</span>`
+            : book.date_started
+              ? `<span class="mobile-meta-item">${formatDate(book.date_started)}</span>`
+              : '',
+        ])}
       </td>
       <td class="padded author-cell" data-label="Author">${escapeHtml(book.author || '')}</td>
       <td class="padded type-cell" data-label="Type">${escapeHtml(book.type || '')}</td>
@@ -50,7 +68,13 @@ export function renderPlannerCardRow({ reader, entry, isAdmin }) {
       <td class="cover-cell">
         ${renderCoverPlaceholder(entry.title)}
       </td>
-      <td class="padded title-cell" data-label="Title"><strong>${escapeHtml(entry.title)}</strong></td>
+      <td class="padded title-cell" data-label="Title">
+        <strong>${escapeHtml(entry.title)}</strong>
+        ${renderMobileMeta([
+          entry.author ? `<span class="mobile-meta-item">${escapeHtml(entry.author)}</span>` : '',
+          entry.type ? `<span class="mobile-meta-item">${escapeHtml(entry.type)}</span>` : '',
+        ])}
+      </td>
       <td class="padded author-cell" data-label="Author">${escapeHtml(entry.author || '')}</td>
       <td class="padded type-cell" data-label="Type">${escapeHtml(entry.type || '')}</td>
       <td class="padded actions-cell">${editButtonMarkup}</td>

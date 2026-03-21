@@ -702,6 +702,10 @@ tr.clickable-row {
   font-size: 0.92rem;
 }
 
+.mobile-meta {
+  display: none;
+}
+
 #tab-ewan .user-panel,
 #tab-isaac .user-panel,
 #tab-ethan .user-panel,
@@ -1061,111 +1065,111 @@ body:has(#tab-tony.active) .btn-danger {
 }
 
 @media (max-width: 700px) {
-  .book-table-wrap table,
-  .book-table-wrap tbody {
-    display: block;
+  .book-table-wrap {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .book-table-wrap table {
     width: 100%;
+    font-size: 0.76rem;
   }
 
-  .book-table-wrap thead {
-    display: none;
+  .book-table-wrap th {
+    padding: 10px 7px;
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
   }
 
-  .book-table-wrap tbody tr {
-    display: grid;
-    grid-template-columns: 52px minmax(0, 1fr);
-    gap: 10px 14px;
-    align-items: start;
-    padding: 14px;
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)),
-      var(--theme-surface-b);
-  }
-
-  .book-table-wrap tbody tr + tr {
-    border-top: 1px solid var(--theme-line);
-  }
-
-  .book-table-wrap td,
-  .book-table-wrap td.padded,
-  .book-table-wrap .cover-cell {
-    display: flex;
-    align-items: flex-start;
-    gap: 6px;
-    min-width: 0;
-    padding: 0 !important;
-    border-bottom: none;
-    background: transparent !important;
-    overflow-wrap: anywhere;
-  }
-
-  .book-table-wrap td:not(.cover-cell) {
-    grid-column: 2;
-    flex-direction: column;
+  .book-table-wrap td.padded {
+    padding: 10px 7px;
   }
 
   .book-table-wrap td::before {
-    content: attr(data-label);
-    color: var(--theme-muted);
-    font-family: Georgia, 'Times New Roman', Times, serif;
-    font-size: 0.62rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-  }
-
-  .book-table-wrap .cover-cell {
-    grid-column: 1;
-    grid-row: 1 / span 4;
-    width: 52px;
-    justify-content: flex-start;
-  }
-
-  .book-table-wrap .title-cell {
-    grid-row: 1;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-
-  .book-table-wrap .title-cell::before,
-  .book-table-wrap .cover-cell::before,
-  .book-table-wrap .actions-cell::before {
     content: none;
   }
 
-  .book-table-wrap .title-cell strong {
-    line-height: 1.35;
-  }
-
-  .book-table-wrap .actions-cell {
-    grid-column: 1 / -1;
-    margin-top: 4px;
-  }
-
-  .book-table-wrap .actions-cell:empty {
+  .book-table-wrap th:nth-child(3),
+  .book-table-wrap th:nth-child(4),
+  .book-table-wrap th:nth-child(7),
+  .book-table-wrap th:nth-child(8),
+  .book-table-wrap th:nth-child(9),
+  .book-table-wrap td.author-cell,
+  .book-table-wrap td.type-cell,
+  .book-table-wrap td.rating-cell,
+  .book-table-wrap td.started-cell,
+  .book-table-wrap td.finished-cell {
     display: none;
   }
 
-  .book-table-wrap .actions-cell .btn-danger {
-    width: 100%;
+  .book-table-wrap .cover-cell {
+    width: 44px;
+    padding: 8px 7px !important;
   }
 
   .book-table-wrap .book-cover,
   .book-table-wrap .book-cover-placeholder {
-    width: 52px;
-    height: 76px;
+    width: 32px;
+    height: 46px;
   }
 
-  .book-table-wrap .progress-cell {
-    gap: 8px;
+  .book-table-wrap .title-cell {
+    min-width: 0;
   }
 
-  .book-table-wrap .progress-cell .progress-bar {
-    width: min(100%, 220px);
+  .book-table-wrap .title-cell strong {
+    font-size: 0.82rem;
+    line-height: 1.25;
   }
 
-  .book-table-wrap .progress-cell .progress-text {
-    margin-left: 0;
+  .book-table-wrap .mobile-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    color: var(--theme-muted);
+    font-size: 0.64rem;
+    line-height: 1.2;
+  }
+
+  .book-table-wrap .mobile-meta-item {
+    min-width: 0;
+  }
+
+  .book-table-wrap .mobile-meta-stars {
+    color: var(--gold);
+    letter-spacing: -0.08em;
+  }
+
+  .book-table-wrap .reread-flag {
+    font-size: 0.72rem;
+  }
+
+  .book-table-wrap .status-cell,
+  .book-table-wrap .progress-cell,
+  .book-table-wrap .actions-cell {
+    white-space: nowrap;
+  }
+
+  .book-table-wrap .status-badge {
+    padding: 4px 7px;
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+  }
+
+  .book-table-wrap .progress-bar {
+    width: 54px;
+    height: 6px;
+  }
+
+  .book-table-wrap .progress-text {
+    margin-left: 4px;
+    font-size: 0.62rem;
+  }
+
+  .book-table-wrap .actions-cell .btn-danger {
+    padding: 6px 8px;
+    font-size: 0.6rem;
   }
 }
 
