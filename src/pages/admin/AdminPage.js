@@ -291,7 +291,7 @@ function renderBookEditFormMarkup(book) {
       </div>
       <div class="field-group full">
         <label>Notes</label>
-        <input type="text" id="edit-notes" value="${escapeHtml(book.notes || '')}">
+        <textarea id="edit-notes" rows="5">${escapeHtml(book.notes || '')}</textarea>
       </div>
     </div>
   `;

@@ -192,7 +192,7 @@ body[data-theme='dark'] .nav-group-readers {
 }
 
 #main-nav .nav-tab-button-primary {
-  min-width: 132px;
+  min-width: 118px;
 }
 
 #main-nav .nav-tab-button-reader {
@@ -276,10 +276,13 @@ body[data-theme='dark'] .nav-group-readers {
   .nav-group-primary {
     flex: 1 1 auto;
     min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .nav-group-primary .nav-tab-button {
     width: 100%;
+    min-width: 0;
   }
 
   .nav-group-admin {

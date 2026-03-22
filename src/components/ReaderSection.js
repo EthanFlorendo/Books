@@ -52,7 +52,7 @@ function renderAdminForm(reader) {
       </div>
       <div class="field-group two">
         <label>Notes</label>
-        <input type="text" id="${reader}-notes" placeholder="Optional...">
+        <textarea id="${reader}-notes" rows="4" placeholder="Add notes or review comments..."></textarea>
       </div>
       <div class="full form-actions-row">
         <button class="btn btn-primary" id="${reader}-add-btn" type="button">Add Book</button>

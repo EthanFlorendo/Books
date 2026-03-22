@@ -50,6 +50,7 @@
 
 .search-wrap input,
 .field-group input,
+.field-group textarea,
 .field-group select,
 .sort-control select {
   width: 100%;
@@ -66,7 +67,8 @@
 }
 
 .search-wrap input::placeholder,
-.field-group input::placeholder {
+.field-group input::placeholder,
+.field-group textarea::placeholder {
   color: var(--theme-muted);
   opacity: 0.78;
 }
@@ -200,14 +202,22 @@
 }
 
 .field-group input,
+.field-group textarea,
 .field-group select,
 .sort-control select {
   padding: 11px 12px;
   font-size: 0.84rem;
 }
 
+.field-group textarea {
+  min-height: 108px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
 .search-wrap input:focus,
 .field-group input:focus,
+.field-group textarea:focus,
 .field-group select:focus,
 .sort-control select:focus {
   outline: none;
@@ -491,6 +501,7 @@
   background: var(--theme-note-bg);
   color: var(--theme-note-fg);
   font-size: 0.84rem;
+  line-height: 1.6;
 }
 
 .book-modal-dates {

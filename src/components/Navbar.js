@@ -23,6 +23,7 @@ export function renderNavbar(activeTab) {
       <div class="nav-primary-row">
         <div class="nav-group nav-group-primary">
           ${renderNavButton('Overview', 'stats', activeTab === 'stats', 'primary')}
+          ${renderNavButton('Reviews', 'reviews', activeTab === 'reviews', 'primary')}
         </div>
         <div class="nav-group nav-group-admin" id="nav-admin-dock"></div>
       </div>

@@ -9,6 +9,7 @@ import { toTabKey } from './utils/helpers.js';
 import { bindAdminShellEvents, closeEditModal, handleSearchInput, hideSearchResults, openEditModal, openPlannerEditModal, renderAdminPage, saveNewBookForReader, saveNewPlannerEntryForReader, setAdminPageHandlers } from './pages/admin/AdminPage.js';
 import { bindShellModalDismissals, bindHomeNavigation, mountHomePage, setLoadingVisible, showActiveTab } from './pages/home/index.js';
 import { closeBookDetailModal, renderLeaderboardPage, renderReaderPage, setLeaderboardPageHandlers } from './pages/leaderboard/LeaderboardPage.js';
+import { renderReviewsPage } from './pages/reviews/ReviewsPage.js';
 
 function getReaderFromTab(tab) {
   return READERS.find(reader => toTabKey(reader) === tab) || null;
@@ -20,6 +21,7 @@ function renderApp() {
   showActiveTab(activeTab);
   renderAdminPage();
   renderLeaderboardPage();
+  renderReviewsPage();
 
   const activeReader = getReaderFromTab(activeTab);
   if (activeReader) {

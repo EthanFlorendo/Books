@@ -7,6 +7,10 @@ const STATUS_SORT_ORDER = {
   Paused: 1,
 };
 
+function formatNotesMarkup(notes = '') {
+  return escapeHtml(notes).replace(/\r?\n/g, '<br>');
+}
+
 export function renderLeaderboardRows(standings) {
   const rankClasses = ['first', 'second', 'third', ''];
 
@@ -146,6 +150,6 @@ export function buildBookDetailViewModel({ book, details, errorMessage = '' }) {
     descriptionText,
     openLibraryMetaMarkup,
     datesMarkup,
-    notesMarkup: book.notes ? `<div class="book-modal-notes">Notes: ${escapeHtml(book.notes)}</div>` : '',
+    notesMarkup: book.notes ? `<div class="book-modal-notes">Notes: ${formatNotesMarkup(book.notes)}</div>` : '',
   };
 }
