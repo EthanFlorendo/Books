@@ -104,7 +104,7 @@ export function comparePlannerEntriesForSort(sortBy, a, b) {
 
 export function buildBookDetailViewModel({ book, details, errorMessage = '' }) {
   const doc = details?.doc || null;
-  const coverId = doc?.cover_i || book.cover_id || null;
+  const coverId = book.cover_id || doc?.cover_i || null;
   const completionPercent = book.total_pages > 0
     ? Math.min(100, Math.round((book.pages / book.total_pages) * 100))
     : 0;

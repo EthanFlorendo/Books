@@ -45,6 +45,10 @@ function getReaderFieldValue(reader, fieldName) {
   return document.getElementById(`${reader}-${fieldName}`)?.value.trim() || '';
 }
 
+function getReaderTitleField(reader) {
+  return document.getElementById(`${reader}-title`);
+}
+
 function buildBookPayloadFromReaderForm(reader) {
   return {
     reader,
@@ -106,12 +110,47 @@ function normalizeEntryIdentityValue(value) {
     .replace(/\s+/g, ' ');
 }
 
+function setSelectedSearchCover(reader, result) {
+  const titleField = getReaderTitleField(reader);
+  if (!titleField) return;
+
+  if (result?.coverId) {
+    titleField.dataset.selectedCoverId = String(result.coverId);
+    titleField.dataset.selectedCoverTitle = normalizeEntryIdentityValue(result.title);
+    titleField.dataset.selectedCoverAuthor = normalizeEntryIdentityValue(result.author);
+    return;
+  }
+
+  delete titleField.dataset.selectedCoverId;
+  delete titleField.dataset.selectedCoverTitle;
+  delete titleField.dataset.selectedCoverAuthor;
+}
+
+function getSelectedSearchCoverId(reader, payload) {
+  const titleField = getReaderTitleField(reader);
+  if (!titleField) return null;
+
+  const selectedCoverId = Number(titleField.dataset.selectedCoverId || '');
+  if (!selectedCoverId) return null;
+
+  const selectedTitle = titleField.dataset.selectedCoverTitle || '';
+  const selectedAuthor = titleField.dataset.selectedCoverAuthor || '';
+  const currentTitle = normalizeEntryIdentityValue(payload?.title);
+  const currentAuthor = normalizeEntryIdentityValue(payload?.author);
+
+  if (selectedTitle !== currentTitle || selectedAuthor !== currentAuthor) {
+    return null;
+  }
+
+  return selectedCoverId;
+}
+
 function isSameEntryIdentity(left, right) {
   return normalizeEntryIdentityValue(left?.title) === normalizeEntryIdentityValue(right?.title)
     && normalizeEntryIdentityValue(left?.author) === normalizeEntryIdentityValue(right?.author);
 }
 
-async function withResolvedCoverId(payload, existingEntry = null) {
+async function withResolvedCoverId(payload, existingEntry = null, preferredCoverId = null) {
   const title = String(payload?.title || '').trim();
   const author = String(payload?.author || '').trim();
 
@@ -119,13 +158,19 @@ async function withResolvedCoverId(payload, existingEntry = null) {
     return { ...payload, cover_id: null };
   }
 
+  if (preferredCoverId) {
+    return { ...payload, cover_id: preferredCoverId };
+  }
+
+  // Preserve the existing saved cover when the user edits fields like notes
+  // without actually changing which book this entry represents.
+  if (existingEntry?.cover_id && isSameEntryIdentity(existingEntry, payload)) {
+    return { ...payload, cover_id: existingEntry.cover_id };
+  }
+
   const coverMetadata = await fetchCoverMetadata(title, author);
   if (coverMetadata?.coverId) {
     return { ...payload, cover_id: coverMetadata.coverId };
-  }
-
-  if (existingEntry?.cover_id && isSameEntryIdentity(existingEntry, payload)) {
-    return { ...payload, cover_id: existingEntry.cover_id };
   }
 
   return { ...payload, cover_id: null };
@@ -154,6 +199,7 @@ function applySearchResult(reader, result) {
   setFieldValue('author', result.author);
   if (result.pages) setFieldValue('totalPages', String(result.pages));
   if (result.type) setFieldValue('type', result.type);
+  setSelectedSearchCover(reader, result);
 
   const resultsDropdown = document.getElementById(`${reader}-search-results`);
   if (resultsDropdown) resultsDropdown.style.display = 'none';
@@ -215,6 +261,7 @@ export async function saveNewBookForReader(reader) {
   if (!(await ensureAdminAccess('add a book'))) return false;
 
   const bookPayload = buildBookPayloadFromReaderForm(reader);
+  const preferredCoverId = getSelectedSearchCoverId(reader, bookPayload);
   if (!bookPayload.title || !bookPayload.author) {
     window.alert('Title and Author are required.');
     return false;
@@ -230,7 +277,7 @@ export async function saveNewBookForReader(reader) {
     }
 
     setActionButtonState(reader, 'add-btn', { disabled: true, label: 'Saving...' });
-    await addBook(await withResolvedCoverId(bookPayload));
+    await addBook(await withResolvedCoverId(bookPayload, null, preferredCoverId));
     setReaderFormOpen(reader, false);
     await adminHandlers.onRefreshData();
 
@@ -247,6 +294,7 @@ export async function saveNewPlannerEntryForReader(reader) {
   if (!(await ensureAdminAccess('add a planner entry'))) return false;
 
   const plannerPayload = buildPlannerPayloadFromReaderForm(reader);
+  const preferredCoverId = getSelectedSearchCoverId(reader, plannerPayload);
   if (!plannerPayload.title || !plannerPayload.author) {
     window.alert('Title and Author are required.');
     return false;
@@ -262,7 +310,7 @@ export async function saveNewPlannerEntryForReader(reader) {
     }
 
     setActionButtonState(reader, 'plan-add-btn', { disabled: true, label: 'Saving...' });
-    await addPlannerEntry(await withResolvedCoverId(plannerPayload));
+    await addPlannerEntry(await withResolvedCoverId(plannerPayload, null, preferredCoverId));
     setReaderFormOpen(reader, false);
     await adminHandlers.onRefreshData();
 
