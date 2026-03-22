@@ -1,6 +1,6 @@
 import { formatDate, toTimeValue } from '../../utils/dateUtils.js';
 import { createCoverUrl } from '../../services/openLibraryService.js';
-import { compareNumbers, compareStrings, escapeHtml } from '../../utils/helpers.js';
+import { compareNumbers, compareStrings, escapeHtml, getTenPointRatingText, hasRating, normalizeRatingPercent } from '../../utils/helpers.js';
 
 const STATUS_SORT_ORDER = {
   Completed: 3,
@@ -68,7 +68,7 @@ function getCompletionPercent(book) {
 export function compareBooksForSort(sortBy, a, b) {
   switch (sortBy) {
     case 'rating':
-      return compareNumbers(b.rating, a.rating)
+      return compareNumbers(normalizeRatingPercent(b.rating), normalizeRatingPercent(a.rating))
         || compareStrings(a.author, b.author)
         || compareStrings(a.title, b.title);
     case 'author':
@@ -113,7 +113,7 @@ export function buildBookDetailViewModel({ book, details, errorMessage = '' }) {
     book.entryKind === 'planner' ? '<span class="book-modal-tag status-tag">Planner</span>' : '',
     book.status ? `<span class="book-modal-tag status-tag">${escapeHtml(book.status)}</span>` : '',
     `<span class="book-modal-tag">${escapeHtml(book.type || 'Novel')}</span>`,
-    book.rating ? `<span class="book-modal-tag">Rating ${book.rating}/5</span>` : '',
+    hasRating(book.rating) ? `<span class="book-modal-tag">Rating ${escapeHtml(getTenPointRatingText(book.rating))}</span>` : '',
     book.reread ? '<span class="book-modal-tag">Reread</span>' : '',
   ].filter(Boolean).join('');
 

@@ -40,8 +40,9 @@ function renderAdminForm(reader) {
         <input type="date" id="${reader}-dateFinished">
       </div>
       <div class="field-group">
-        <label>Rating</label>
-        <select id="${reader}-rating">${renderSelectOptions([1, 2, 3, 4, 5], '', true)}</select>
+        <label>Rating / 10</label>
+        <input type="number" id="${reader}-rating" placeholder="8.7" min="0" max="10" step="0.1" inputmode="decimal">
+        <span class="field-note">Use tenths like 8.7.</span>
       </div>
       <div class="field-group">
         <label>Reread?</label>

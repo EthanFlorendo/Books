@@ -17,9 +17,9 @@
   --shadow-lg: 0 28px 60px rgba(15, 23, 42, 0.14);
   --shadow-md: 0 14px 32px rgba(15, 23, 42, 0.09);
   --glow: 0 0 0 1px rgba(47, 111, 237, 0.08), 0 18px 40px rgba(47, 111, 237, 0.08);
-  --radius-lg: 28px;
-  --radius-md: 20px;
-  --radius-sm: 14px;
+  --radius-lg: 10px;
+  --radius-md: 7px;
+  --radius-sm: 5px;
   --current: #2f6fed;
   --completed: #15803d;
   --paused: #94a3b8;
@@ -294,10 +294,10 @@ textarea {
   font-size: 0.74rem;
 }
 
-.stars {
-  color: var(--gold);
+.rating-value {
+  color: var(--theme-text);
   font-size: 0.92rem;
-  letter-spacing: -0.08em;
+  font-weight: 700;
 }
 
 .reread-flag {

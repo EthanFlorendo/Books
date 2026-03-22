@@ -1,6 +1,6 @@
 import { formatDate } from '../utils/dateUtils.js';
 import { createCoverUrl } from '../services/openLibraryService.js';
-import { escapeHtml, formatStarsMarkup } from '../utils/helpers.js';
+import { escapeHtml, formatTenPointRating, hasRating } from '../utils/helpers.js';
 
 function renderStaticCoverPlaceholder(style = '') {
   return `<div class="book-cover-placeholder"${style ? ` style="${style}"` : ''}>Book</div>`;
@@ -70,7 +70,7 @@ export function renderBookCardRow({ reader, book, isAdmin }) {
         ${renderMobileMeta([
           book.author ? `<span class="mobile-meta-item">${escapeHtml(book.author)}</span>` : '',
           book.type ? `<span class="mobile-meta-item">${escapeHtml(book.type)}</span>` : '',
-          book.rating ? `<span class="mobile-meta-item mobile-meta-stars">${formatStarsMarkup(book.rating)}</span>` : '',
+          hasRating(book.rating) ? `<span class="mobile-meta-item mobile-meta-rating">${formatTenPointRating(book.rating)}</span>` : '',
           book.date_finished
             ? `<span class="mobile-meta-item">${formatDate(book.date_finished)}</span>`
             : book.date_started
@@ -87,7 +87,7 @@ export function renderBookCardRow({ reader, book, isAdmin }) {
         <div class="progress-bar"><div class="progress-fill" style="width:${completionPercent}%"></div></div>
         <span class="progress-text">${book.pages}/${book.total_pages || '?'}</span>
       </td>
-      <td class="padded rating-cell" data-label="Rating"><span class="stars">${formatStarsMarkup(book.rating)}</span></td>
+      <td class="padded rating-cell" data-label="Rating"><span class="rating-value">${formatTenPointRating(book.rating)}</span></td>
       <td class="padded started-cell" data-label="Started">${formatDate(book.date_started)}</td>
       <td class="padded finished-cell" data-label="Finished">${formatDate(book.date_finished)}</td>
       <td class="padded actions-cell">${editButtonMarkup}</td>

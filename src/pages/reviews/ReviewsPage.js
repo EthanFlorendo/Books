@@ -1,6 +1,6 @@
 import { createCoverUrl, fetchCoverMetadata } from '../../services/openLibraryService.js';
 import { getAppState } from '../../state/appState.js';
-import { escapeHtml, formatStarsMarkup } from '../../utils/helpers.js';
+import { escapeHtml, getTenPointRatingText, hasRating } from '../../utils/helpers.js';
 
 const REVIEW_ACCENTS = {
   Ethan: '#79a7ff',
@@ -175,11 +175,11 @@ function renderReviewDetail(review) {
   const bookLine = review.author
     ? `${escapeHtml(review.title)} by ${escapeHtml(review.author)}`
     : escapeHtml(review.title);
-  const ratingMarkup = review.rating
+  const ratingText = getTenPointRatingText(review.rating);
+  const ratingMarkup = hasRating(review.rating)
     ? `
-      <div class="review-detail-rating" aria-label="Rating ${escapeHtml(String(review.rating))} out of 5">
-        <span class="review-detail-rating-stars">${formatStarsMarkup(review.rating)}</span>
-        <span class="review-detail-rating-score">${escapeHtml(String(review.rating))}/5</span>
+      <div class="review-detail-rating" aria-label="Rating ${escapeHtml(ratingText.replace('/10', ' out of 10'))}">
+        <span class="review-detail-rating-value">${escapeHtml(ratingText)}</span>
       </div>
     `
     : '<div class="review-detail-rating review-detail-rating-empty">No rating</div>';

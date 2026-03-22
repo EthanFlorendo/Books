@@ -7,7 +7,7 @@ import { addBook, deleteBook, getBookById, updateBook } from '../../services/boo
 import { addPlannerEntry, deletePlannerEntry, getPlannerEntryById, updatePlannerEntry } from '../../services/plannerService.js';
 import { fetchCoverMetadata, searchOpenLibrary, validateLiterature } from '../../services/openLibraryService.js';
 import { BOOK_STATUSES, BOOK_TYPES } from '../../utils/constants.js';
-import { escapeHtml, parseInteger, renderSelectOptions } from '../../utils/helpers.js';
+import { escapeHtml, getTenPointRatingInputValue, parseInteger, parseTenPointRatingInput, renderSelectOptions } from '../../utils/helpers.js';
 
 let adminHandlers = {
   onToggleAdmin: async () => {},
@@ -60,7 +60,7 @@ function buildBookPayloadFromReaderForm(reader) {
     status: getReaderFieldValue(reader, 'status') || 'Current',
     date_started: getReaderFieldValue(reader, 'dateStarted') || null,
     date_finished: getReaderFieldValue(reader, 'dateFinished') || null,
-    rating: getReaderFieldValue(reader, 'rating') ? parseInteger(getReaderFieldValue(reader, 'rating')) : null,
+    rating: parseTenPointRatingInput(getReaderFieldValue(reader, 'rating')),
     reread: getReaderFieldValue(reader, 'reread') === 'true',
     notes: getReaderFieldValue(reader, 'notes') || '',
   };
@@ -87,7 +87,7 @@ function buildBookPayloadFromEditForm() {
     status: getValue('status'),
     date_started: getValue('dateStarted') || null,
     date_finished: getValue('dateFinished') || null,
-    rating: getValue('rating') ? parseInteger(getValue('rating')) : null,
+    rating: parseTenPointRatingInput(getValue('rating')),
     reread: getValue('reread') === 'true',
     notes: getValue('notes') || '',
   };
@@ -400,8 +400,9 @@ function renderBookEditFormMarkup(book) {
         <input type="date" id="edit-dateFinished" value="${book.date_finished || ''}">
       </div>
       <div class="field-group">
-        <label>Rating</label>
-        <select id="edit-rating">${renderSelectOptions([1, 2, 3, 4, 5], Number(book.rating) || '', true)}</select>
+        <label>Rating / 10</label>
+        <input type="number" id="edit-rating" value="${getTenPointRatingInputValue(book.rating)}" min="0" max="10" step="0.1" inputmode="decimal" placeholder="8.7">
+        <span class="field-note">Use tenths like 8.7.</span>
       </div>
       <div class="field-group">
         <label>Reread?</label>

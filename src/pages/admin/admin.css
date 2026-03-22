@@ -55,7 +55,7 @@
 .sort-control select {
   width: 100%;
   border: 1px solid var(--theme-line);
-  border-radius: 14px;
+  border-radius: 6px;
   background: var(--theme-input);
   color: var(--theme-text);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
@@ -89,7 +89,7 @@
   max-height: 320px;
   overflow-y: auto;
   border: 1px solid var(--theme-line);
-  border-radius: 18px;
+  border-radius: 7px;
   background: var(--theme-panel-strong);
   box-shadow: var(--shadow-lg);
 }
@@ -128,7 +128,7 @@
   height: 48px;
   flex-shrink: 0;
   border: 1px solid var(--theme-line);
-  border-radius: 10px;
+  border-radius: 4px;
   background: var(--theme-highlight);
 }
 
@@ -201,6 +201,12 @@
   font-weight: 600;
 }
 
+.field-note {
+  color: var(--theme-muted);
+  font-size: 0.7rem;
+  line-height: 1.4;
+}
+
 .field-group input,
 .field-group textarea,
 .field-group select,
@@ -263,7 +269,7 @@
 .book-modal {
   background: var(--theme-modal-bg);
   border: 1px solid var(--theme-modal-border);
-  border-radius: 24px;
+  border-radius: 10px;
   box-shadow: var(--shadow-lg);
   overflow: hidden;
 }
@@ -370,7 +376,7 @@
   width: 150px;
   height: 225px;
   border: 1px solid var(--theme-line);
-  border-radius: 18px;
+  border-radius: 7px;
   box-shadow: 0 16px 30px rgba(15, 23, 42, 0.12);
 }
 
@@ -497,7 +503,7 @@
   margin-top: 14px;
   padding: 12px 14px;
   border: 1px solid var(--theme-note-border);
-  border-radius: 14px;
+  border-radius: 6px;
   background: var(--theme-note-bg);
   color: var(--theme-note-fg);
   font-size: 0.84rem;
@@ -540,7 +546,7 @@
   position: relative;
   width: min(440px, 100%);
   border: 1px solid var(--theme-line);
-  border-radius: 28px;
+  border-radius: 10px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(244, 247, 251, 0.96));
   box-shadow: 0 32px 72px rgba(15, 23, 42, 0.16);
@@ -569,7 +575,7 @@ body[data-theme='dark'] .admin-login-shell {
   width: 42px;
   height: 42px;
   border: 1px solid var(--theme-line);
-  border-radius: 14px;
+  border-radius: 6px;
   background: var(--theme-input);
   color: var(--theme-muted);
   font-size: 1.5rem;
@@ -641,7 +647,7 @@ body[data-theme='dark'] .admin-login-shell {
   width: 100%;
   padding: 15px 16px;
   border: 1px solid var(--theme-line);
-  border-radius: 16px;
+  border-radius: 7px;
   background: var(--theme-input);
   color: var(--theme-text);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
@@ -724,7 +730,7 @@ body[data-theme='dark'] .admin-login-shell {
   margin-top: 16px;
   padding: 12px 14px;
   border: 1px solid rgba(180, 35, 24, 0.16);
-  border-radius: 14px;
+  border-radius: 6px;
   background: rgba(180, 35, 24, 0.08);
   color: #b42318;
   font-size: 0.84rem;
@@ -797,7 +803,7 @@ body.admin-login-open {
   }
 
   .admin-login-shell {
-    border-radius: 24px;
+    border-radius: 8px;
   }
 
   .admin-login-card {
