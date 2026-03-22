@@ -5,7 +5,7 @@ import { clearEditSession, getAppState, getSearchTimer, setReaderFormOpen, setSe
 import { ensureAdminAccess } from '../../services/authService.js';
 import { addBook, deleteBook, getBookById, updateBook } from '../../services/booksService.js';
 import { addPlannerEntry, deletePlannerEntry, getPlannerEntryById, updatePlannerEntry } from '../../services/plannerService.js';
-import { searchOpenLibrary, validateLiterature } from '../../services/openLibraryService.js';
+import { fetchCoverMetadata, searchOpenLibrary, validateLiterature } from '../../services/openLibraryService.js';
 import { BOOK_STATUSES, BOOK_TYPES } from '../../utils/constants.js';
 import { escapeHtml, parseInteger, renderSelectOptions } from '../../utils/helpers.js';
 
@@ -97,6 +97,38 @@ function buildPlannerPayloadFromEditForm() {
     author: getValue('author'),
     type: getValue('type') || 'Novel',
   };
+}
+
+function normalizeEntryIdentityValue(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ');
+}
+
+function isSameEntryIdentity(left, right) {
+  return normalizeEntryIdentityValue(left?.title) === normalizeEntryIdentityValue(right?.title)
+    && normalizeEntryIdentityValue(left?.author) === normalizeEntryIdentityValue(right?.author);
+}
+
+async function withResolvedCoverId(payload, existingEntry = null) {
+  const title = String(payload?.title || '').trim();
+  const author = String(payload?.author || '').trim();
+
+  if (!title) {
+    return { ...payload, cover_id: null };
+  }
+
+  const coverMetadata = await fetchCoverMetadata(title, author);
+  if (coverMetadata?.coverId) {
+    return { ...payload, cover_id: coverMetadata.coverId };
+  }
+
+  if (existingEntry?.cover_id && isSameEntryIdentity(existingEntry, payload)) {
+    return { ...payload, cover_id: existingEntry.cover_id };
+  }
+
+  return { ...payload, cover_id: null };
 }
 
 function setActionButtonState(reader, buttonId, { disabled, label }) {
@@ -198,7 +230,7 @@ export async function saveNewBookForReader(reader) {
     }
 
     setActionButtonState(reader, 'add-btn', { disabled: true, label: 'Saving...' });
-    await addBook(bookPayload);
+    await addBook(await withResolvedCoverId(bookPayload));
     setReaderFormOpen(reader, false);
     await adminHandlers.onRefreshData();
 
@@ -230,7 +262,7 @@ export async function saveNewPlannerEntryForReader(reader) {
     }
 
     setActionButtonState(reader, 'plan-add-btn', { disabled: true, label: 'Saving...' });
-    await addPlannerEntry(plannerPayload);
+    await addPlannerEntry(await withResolvedCoverId(plannerPayload));
     setReaderFormOpen(reader, false);
     await adminHandlers.onRefreshData();
 
@@ -352,14 +384,22 @@ export function closeEditModal() {
 async function saveEditChanges() {
   if (!(await ensureAdminAccess('save edits'))) return false;
 
-  const { editSession } = getAppState();
+  const { editSession, booksByReader, plannerByReader } = getAppState();
   if (!editSession) return false;
 
   try {
     if (editSession.kind === 'planner') {
-      await updatePlannerEntry(editSession.entryId, buildPlannerPayloadFromEditForm());
+      const currentEntry = getPlannerEntryById(plannerByReader, editSession.reader, editSession.entryId);
+      await updatePlannerEntry(
+        editSession.entryId,
+        await withResolvedCoverId(buildPlannerPayloadFromEditForm(), currentEntry)
+      );
     } else {
-      await updateBook(editSession.entryId, buildBookPayloadFromEditForm());
+      const currentBook = getBookById(booksByReader, editSession.reader, editSession.entryId);
+      await updateBook(
+        editSession.entryId,
+        await withResolvedCoverId(buildBookPayloadFromEditForm(), currentBook)
+      );
     }
     closeEditModal();
     await adminHandlers.onRefreshData();

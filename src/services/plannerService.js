@@ -2,6 +2,33 @@ import { createEmptyPlannerByReader } from '../state/appState.js';
 import { requireSupabaseClient } from './supabaseClient.js';
 
 const PLANNER_TABLE = 'planned_books';
+let supportsPlannerCoverIdColumn = true;
+
+function hasCoverIdField(payload) {
+  return Boolean(payload) && Object.prototype.hasOwnProperty.call(payload, 'cover_id');
+}
+
+function omitCoverId(payload) {
+  const { cover_id, ...rest } = payload || {};
+  return rest;
+}
+
+function isMissingCoverIdColumnError(error) {
+  const message = String(error?.message || error?.details || error?.hint || '').toLowerCase();
+  return message.includes('cover_id') && (message.includes('column') || message.includes('schema cache') || message.includes('could not find'));
+}
+
+async function insertPlannerPayload(supabaseClient, entryPayload) {
+  return supabaseClient.from(PLANNER_TABLE).insert(entryPayload);
+}
+
+async function updatePlannerPayload(supabaseClient, entryId, entryPayload) {
+  return supabaseClient.from(PLANNER_TABLE).update(entryPayload).eq('id', entryId);
+}
+
+export function hasPlannerCoverIdSupport() {
+  return supportsPlannerCoverIdColumn;
+}
 
 export async function verifyPlannerTable() {
   const supabaseClient = requireSupabaseClient();
@@ -32,16 +59,52 @@ export function groupPlannerEntriesByReader(entries) {
 
 export async function addPlannerEntry(entryPayload) {
   const supabaseClient = requireSupabaseClient();
-  const { error } = await supabaseClient.from(PLANNER_TABLE).insert(entryPayload);
+  let didPersistCoverId = hasCoverIdField(entryPayload);
+  let { error } = await insertPlannerPayload(supabaseClient, entryPayload);
+
+  if (error && hasCoverIdField(entryPayload) && isMissingCoverIdColumnError(error)) {
+    supportsPlannerCoverIdColumn = false;
+    didPersistCoverId = false;
+
+    const fallbackPayload = omitCoverId(entryPayload);
+    if (Object.keys(fallbackPayload).length) {
+      ({ error } = await insertPlannerPayload(supabaseClient, fallbackPayload));
+    } else {
+      error = null;
+    }
+  }
 
   if (error) throw error;
+  if (didPersistCoverId) {
+    supportsPlannerCoverIdColumn = true;
+  }
+
+  return didPersistCoverId;
 }
 
 export async function updatePlannerEntry(entryId, entryPayload) {
   const supabaseClient = requireSupabaseClient();
-  const { error } = await supabaseClient.from(PLANNER_TABLE).update(entryPayload).eq('id', entryId);
+  let didPersistCoverId = hasCoverIdField(entryPayload);
+  let { error } = await updatePlannerPayload(supabaseClient, entryId, entryPayload);
+
+  if (error && hasCoverIdField(entryPayload) && isMissingCoverIdColumnError(error)) {
+    supportsPlannerCoverIdColumn = false;
+    didPersistCoverId = false;
+
+    const fallbackPayload = omitCoverId(entryPayload);
+    if (Object.keys(fallbackPayload).length) {
+      ({ error } = await updatePlannerPayload(supabaseClient, entryId, fallbackPayload));
+    } else {
+      error = null;
+    }
+  }
 
   if (error) throw error;
+  if (didPersistCoverId) {
+    supportsPlannerCoverIdColumn = true;
+  }
+
+  return didPersistCoverId;
 }
 
 export async function deletePlannerEntry(entryId) {

@@ -1,5 +1,6 @@
 import { bindAdminLoginEvents, ensureAdminAccess, subscribeToAuthChanges, syncAdminState, toggleAdminAccess } from './services/authService.js';
 import { fetchBooks, groupBooksByReader, seedBooksIfEmpty, verifyBooksTable } from './services/booksService.js';
+import { backfillMissingCoverIds } from './services/coverBackfillService.js';
 import { fetchPlannerEntries, groupPlannerEntriesByReader, verifyPlannerTable } from './services/plannerService.js';
 import { initializeSupabaseClient } from './services/supabaseClient.js';
 import { initializeTheme } from './services/themeService.js';
@@ -39,6 +40,16 @@ async function refreshBooksAndRender() {
     setBooksByReader(groupBooksByReader(books));
     setPlannerByReader(groupPlannerEntriesByReader(plannerEntries));
     renderApp();
+
+    if (getAppState().isAdmin) {
+      void backfillMissingCoverIds()
+        .then(updatedAnyEntries => {
+          if (updatedAnyEntries) {
+            void refreshBooksAndRender();
+          }
+        })
+        .catch(() => {});
+    }
   } catch (error) {
     window.alert(`Could not load reading data: ${error.message}`);
   } finally {

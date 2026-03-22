@@ -1,6 +1,6 @@
 import { renderReaderSection } from '../../components/ReaderSection.js';
 import { getAppState } from '../../state/appState.js';
-import { fetchBookDetails, fetchCoverUrlByTitle } from '../../services/openLibraryService.js';
+import { createCoverUrl, fetchBookDetails, fetchCoverMetadata } from '../../services/openLibraryService.js';
 import { getBookById, getLeaderboardStandings, getReaderStats } from '../../services/booksService.js';
 import { getPlannerEntryById } from '../../services/plannerService.js';
 import { READERS } from '../../utils/constants.js';
@@ -116,26 +116,36 @@ function bindReaderEvents(reader, panel) {
 }
 
 async function hydrateMissingBookCovers(scopeElement) {
-  const placeholders = scopeElement.querySelectorAll('.book-cover-placeholder[data-fetch]');
+  const placeholders = Array.from(scopeElement.querySelectorAll('.book-cover-placeholder[data-cover-title]'));
 
-  for (const placeholder of placeholders) {
-    const coverUrl = await fetchCoverUrlByTitle(placeholder.dataset.fetch);
-    if (!coverUrl) continue;
+  await Promise.all(placeholders.map(async placeholder => {
+    const title = placeholder.dataset.coverTitle || '';
+    const author = placeholder.dataset.coverAuthor || '';
+    const coverMetadata = await fetchCoverMetadata(title, author);
+    if (!coverMetadata?.coverUrl || !placeholder.isConnected) return;
 
-    placeholder.removeAttribute('data-fetch');
     const image = document.createElement('img');
     image.className = 'book-cover';
-    image.src = coverUrl;
     image.alt = '';
-    image.loading = 'lazy';
-    image.onerror = () => {
-      image.style.display = 'none';
-      placeholder.style.display = 'flex';
-    };
+    image.loading = 'eager';
+    image.decoding = 'async';
+    image.addEventListener('load', () => {
+      if (!placeholder.isConnected) return;
 
-    placeholder.parentNode.insertBefore(image, placeholder);
-    placeholder.style.display = 'none';
-  }
+      placeholder.parentNode.insertBefore(image, placeholder);
+      placeholder.style.display = 'none';
+      placeholder.removeAttribute('data-cover-title');
+      placeholder.removeAttribute('data-cover-author');
+    });
+    image.addEventListener('error', () => {
+      if (placeholder.isConnected) {
+        placeholder.classList.remove('is-loading');
+      }
+    });
+
+    placeholder.classList.add('is-loading');
+    image.src = coverMetadata.coverUrl;
+  }));
 }
 
 async function openBookDetail(reader, bookId) {
@@ -174,7 +184,19 @@ async function openDetailView(entry) {
   if (author) author.textContent = `by ${entry.author || 'Unknown'}`;
   if (meta) meta.innerHTML = '';
   if (progress) progress.innerHTML = '';
-  if (cover) cover.innerHTML = '<div class="book-modal-cover-loading">Loading cover...</div>';
+  if (cover) {
+    cover.innerHTML = entry.cover_id
+      ? `
+        <img
+          class="book-modal-cover"
+          src="${createCoverUrl(entry.cover_id, 'L')}"
+          alt=""
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+        >
+        <div class="book-modal-cover-placeholder" style="display:none">Book</div>
+      `
+      : '<div class="book-modal-cover-loading">Loading cover...</div>';
+  }
   if (description) {
     description.textContent = 'Fetching description...';
     description.className = 'book-modal-desc loading';

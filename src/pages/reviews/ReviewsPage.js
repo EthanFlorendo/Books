@@ -1,4 +1,4 @@
-import { fetchCoverUrlByTitle } from '../../services/openLibraryService.js';
+import { createCoverUrl, fetchCoverMetadata } from '../../services/openLibraryService.js';
 import { getAppState } from '../../state/appState.js';
 import { escapeHtml, formatStarsMarkup } from '../../utils/helpers.js';
 
@@ -49,11 +49,8 @@ function getReviewsFromBooks() {
 }
 
 async function resolveReviewCoverUrl(title, author = '') {
-  const primaryMatch = await fetchCoverUrlByTitle(title);
-  if (primaryMatch) return primaryMatch;
-
-  const fallbackQuery = `${title} ${author}`.trim();
-  return fallbackQuery ? fetchCoverUrlByTitle(fallbackQuery) : null;
+  const coverMetadata = await fetchCoverMetadata(title, author);
+  return coverMetadata?.coverUrl || null;
 }
 
 function toLargeCoverUrl(coverUrl) {
@@ -76,7 +73,7 @@ function closeReview() {
   scrollReviewsIntoView();
 }
 
-function renderReviewCover(review) {
+function renderReviewCoverPlaceholder(review) {
   return `
     <div
       class="review-card-cover review-card-cover-placeholder"
@@ -84,6 +81,51 @@ function renderReviewCover(review) {
       data-cover-author="${escapeHtml(review.author || '')}"
       aria-hidden="true"
     ></div>
+  `;
+}
+
+function renderReviewCover(review) {
+  if (!review.cover_id) {
+    return renderReviewCoverPlaceholder(review);
+  }
+
+  return `
+    <img
+      class="review-card-cover"
+      src="${escapeHtml(createCoverUrl(review.cover_id, 'M'))}"
+      alt="Cover of ${escapeHtml(review.title)}"
+      loading="lazy"
+      decoding="async"
+      onerror="this.style.display='none';this.nextElementSibling.style.display='block'"
+    >
+    <div class="review-card-cover review-card-cover-placeholder" aria-hidden="true" style="display:none"></div>
+  `;
+}
+
+function renderReviewDetailHeroMedia(review) {
+  if (!review.cover_id) {
+    return `
+      <div
+        class="review-detail-hero-media"
+        data-detail-cover
+        data-cover-title="${escapeHtml(review.title)}"
+        data-cover-author="${escapeHtml(review.author || '')}"
+        aria-hidden="true"
+      ></div>
+    `;
+  }
+
+  return `
+    <div class="review-detail-hero-media has-image" aria-hidden="true">
+      <img
+        class="review-detail-hero-image"
+        src="${escapeHtml(createCoverUrl(review.cover_id, 'L'))}"
+        alt=""
+        loading="eager"
+        decoding="async"
+        onerror="this.parentNode.classList.remove('has-image');this.remove()"
+      >
+    </div>
   `;
 }
 
@@ -145,13 +187,7 @@ function renderReviewDetail(review) {
   return `
     <div class="review-detail-page" style="--review-accent: ${escapeHtml(review.accent)};">
       <section class="review-detail-hero">
-        <div
-          class="review-detail-hero-media"
-          data-detail-cover
-          data-cover-title="${escapeHtml(review.title)}"
-          data-cover-author="${escapeHtml(review.author || '')}"
-          aria-hidden="true"
-        ></div>
+        ${renderReviewDetailHeroMedia(review)}
         <div class="review-detail-hero-overlay"></div>
         <div class="review-detail-topbar">
           <button class="review-detail-back" data-review-back type="button">Back to Reviews</button>
@@ -216,7 +252,7 @@ async function hydrateReviewCardCovers(scopeElement) {
     const image = document.createElement('img');
     image.className = 'review-card-cover';
     image.alt = `Cover of ${title}`;
-    image.loading = 'lazy';
+    image.loading = 'eager';
     image.decoding = 'async';
     image.addEventListener('load', () => {
       if (!placeholder.isConnected) return;

@@ -3,6 +3,8 @@ import { isThisMonth } from '../utils/dateUtils.js';
 import { createEmptyBooksByReader } from '../state/appState.js';
 import { requireSupabaseClient } from './supabaseClient.js';
 
+let supportsBookCoverIdColumn = true;
+
 const SEED_BOOKS = [
   { reader: 'Ewan', title: 'The Hunting of The Snark', author: 'Lewis Carroll', pages: 25, total_pages: 25, type: 'Poetry', status: 'Completed', date_started: '2026-03-13', date_finished: '2026-03-13' },
   { reader: 'Ewan', title: 'Shogun', author: 'James Clavell', pages: 40, total_pages: 1299, type: 'Novel', status: 'Current', date_started: '2026-03-13', date_finished: null },
@@ -11,6 +13,32 @@ const SEED_BOOKS = [
   { reader: 'Ewan', title: 'Treasure Island', author: 'Robert Louis Stevenson', pages: 48, total_pages: 135, type: 'Novel', status: 'Paused', date_started: '2026-02-25', date_finished: null },
   { reader: 'Isaac', title: 'Wool', author: 'Hugh Howey', pages: 320, total_pages: 584, type: 'Novel', status: 'Current', date_started: '2026-03-01', date_finished: null },
 ];
+
+function hasCoverIdField(payload) {
+  return Boolean(payload) && Object.prototype.hasOwnProperty.call(payload, 'cover_id');
+}
+
+function omitCoverId(payload) {
+  const { cover_id, ...rest } = payload || {};
+  return rest;
+}
+
+function isMissingCoverIdColumnError(error) {
+  const message = String(error?.message || error?.details || error?.hint || '').toLowerCase();
+  return message.includes('cover_id') && (message.includes('column') || message.includes('schema cache') || message.includes('could not find'));
+}
+
+async function insertBookPayload(supabaseClient, bookPayload) {
+  return supabaseClient.from('books').insert(bookPayload);
+}
+
+async function updateBookPayload(supabaseClient, bookId, bookPayload) {
+  return supabaseClient.from('books').update(bookPayload).eq('id', bookId);
+}
+
+export function hasBookCoverIdSupport() {
+  return supportsBookCoverIdColumn;
+}
 
 export async function verifyBooksTable() {
   const supabaseClient = requireSupabaseClient();
@@ -54,16 +82,52 @@ export function groupBooksByReader(books) {
 
 export async function addBook(bookPayload) {
   const supabaseClient = requireSupabaseClient();
-  const { error } = await supabaseClient.from('books').insert(bookPayload);
+  let didPersistCoverId = hasCoverIdField(bookPayload);
+  let { error } = await insertBookPayload(supabaseClient, bookPayload);
+
+  if (error && hasCoverIdField(bookPayload) && isMissingCoverIdColumnError(error)) {
+    supportsBookCoverIdColumn = false;
+    didPersistCoverId = false;
+
+    const fallbackPayload = omitCoverId(bookPayload);
+    if (Object.keys(fallbackPayload).length) {
+      ({ error } = await insertBookPayload(supabaseClient, fallbackPayload));
+    } else {
+      error = null;
+    }
+  }
 
   if (error) throw error;
+  if (didPersistCoverId) {
+    supportsBookCoverIdColumn = true;
+  }
+
+  return didPersistCoverId;
 }
 
 export async function updateBook(bookId, bookPayload) {
   const supabaseClient = requireSupabaseClient();
-  const { error } = await supabaseClient.from('books').update(bookPayload).eq('id', bookId);
+  let didPersistCoverId = hasCoverIdField(bookPayload);
+  let { error } = await updateBookPayload(supabaseClient, bookId, bookPayload);
+
+  if (error && hasCoverIdField(bookPayload) && isMissingCoverIdColumnError(error)) {
+    supportsBookCoverIdColumn = false;
+    didPersistCoverId = false;
+
+    const fallbackPayload = omitCoverId(bookPayload);
+    if (Object.keys(fallbackPayload).length) {
+      ({ error } = await updateBookPayload(supabaseClient, bookId, fallbackPayload));
+    } else {
+      error = null;
+    }
+  }
 
   if (error) throw error;
+  if (didPersistCoverId) {
+    supportsBookCoverIdColumn = true;
+  }
+
+  return didPersistCoverId;
 }
 
 export async function deleteBook(bookId) {

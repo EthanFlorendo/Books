@@ -1,9 +1,58 @@
 import { detectBookType } from '../utils/helpers.js';
 
 const coverCache = new Map();
+const coverRequestCache = new Map();
 
-function createCoverUrl(coverId, size = 'M') {
+export function createCoverUrl(coverId, size = 'M') {
   return coverId ? `https://covers.openlibrary.org/b/id/${coverId}-${size}.jpg` : '';
+}
+
+function normalizeLookupValue(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function normalizeSearchValue(value) {
+  return normalizeLookupValue(value)
+    .replace(/[^a-z0-9 ]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function getCoverCacheKey(title, author = '') {
+  return `${normalizeLookupValue(title)}::${normalizeLookupValue(author)}`;
+}
+
+function countWordOverlap(left, right) {
+  if (!left || !right) return 0;
+
+  const leftWords = left.split(' ').filter(word => word.length > 2);
+  if (!leftWords.length) return 0;
+
+  return leftWords.filter(word => right.includes(word)).length;
+}
+
+function selectBestCoverDoc(docs, title, author) {
+  const normalizedTitle = normalizeSearchValue(title);
+  const normalizedAuthor = normalizeSearchValue(author);
+
+  const bestMatch = (docs || [])
+    .filter(doc => doc?.cover_i)
+    .map(doc => {
+      const candidateTitle = normalizeSearchValue(doc.title);
+      const candidateAuthor = normalizeSearchValue((doc.author_name || []).join(' '));
+      const titleExactBonus = normalizedTitle && candidateTitle === normalizedTitle ? 200 : 0;
+      const authorExactBonus = normalizedAuthor && candidateAuthor.includes(normalizedAuthor) ? 90 : 0;
+      const titleOverlapScore = countWordOverlap(normalizedTitle, candidateTitle) * 20;
+      const authorOverlapScore = countWordOverlap(normalizedAuthor, candidateAuthor) * 12;
+
+      return {
+        doc,
+        score: titleExactBonus + authorExactBonus + titleOverlapScore + authorOverlapScore,
+      };
+    })
+    .sort((left, right) => right.score - left.score)[0];
+
+  return bestMatch?.score > 0 ? bestMatch.doc : null;
 }
 
 export async function searchOpenLibrary(query) {
@@ -20,6 +69,7 @@ export async function searchOpenLibrary(query) {
   return (payload.docs || []).map(doc => ({
     title: doc.title || '',
     author: (doc.author_name || []).slice(0, 2).join(', '),
+    coverId: doc.cover_i || null,
     pages: doc.number_of_pages_median || 0,
     year: doc.first_publish_year || '',
     coverUrl: createCoverUrl(doc.cover_i, 'M'),
@@ -92,28 +142,58 @@ export async function fetchBookDetails(title, author) {
   return { doc, description };
 }
 
-export async function fetchCoverUrlByTitle(title) {
-  const cacheKey = String(title || '').trim().toLowerCase();
-  if (!cacheKey) return null;
+export async function fetchCoverMetadata(title, author = '') {
+  const normalizedTitle = String(title || '').trim();
+  const normalizedAuthor = String(author || '').trim();
+  const cacheKey = getCoverCacheKey(normalizedTitle, normalizedAuthor);
+
+  if (!normalizedTitle) return null;
 
   if (coverCache.has(cacheKey)) {
     return coverCache.get(cacheKey);
   }
 
-  try {
-    const response = await fetch(
-      `https://openlibrary.org/search.json?q=${encodeURIComponent(title)}&fields=cover_i&limit=1`
-    );
-
-    if (!response.ok) throw new Error('Could not load cover');
-
-    const payload = await response.json();
-    const coverUrl = createCoverUrl(payload.docs?.[0]?.cover_i, 'M') || null;
-
-    coverCache.set(cacheKey, coverUrl);
-    return coverUrl;
-  } catch {
-    coverCache.set(cacheKey, null);
-    return null;
+  if (coverRequestCache.has(cacheKey)) {
+    return coverRequestCache.get(cacheKey);
   }
+
+  const request = (async () => {
+    try {
+      const query = [normalizedTitle, normalizedAuthor].filter(Boolean).join(' ');
+      const response = await fetch(
+        `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&fields=title,author_name,cover_i&limit=8`
+      );
+
+      if (!response.ok) throw new Error('Could not load cover');
+
+      const payload = await response.json();
+      const coverDoc = selectBestCoverDoc(payload.docs, normalizedTitle, normalizedAuthor);
+      const coverMetadata = coverDoc?.cover_i
+        ? {
+            coverId: Number(coverDoc.cover_i),
+            coverUrl: createCoverUrl(coverDoc.cover_i, 'M'),
+          }
+        : null;
+
+      coverCache.set(cacheKey, coverMetadata);
+      return coverMetadata;
+    } catch {
+      coverCache.set(cacheKey, null);
+      return null;
+    } finally {
+      coverRequestCache.delete(cacheKey);
+    }
+  })();
+
+  coverRequestCache.set(cacheKey, request);
+  return request;
+}
+
+export async function fetchCoverUrl(title, author = '') {
+  const coverMetadata = await fetchCoverMetadata(title, author);
+  return coverMetadata?.coverUrl || null;
+}
+
+export async function fetchCoverUrlByTitle(title) {
+  return fetchCoverUrl(title);
 }

@@ -1,4 +1,5 @@
 import { formatDate, toTimeValue } from '../../utils/dateUtils.js';
+import { createCoverUrl } from '../../services/openLibraryService.js';
 import { compareNumbers, compareStrings, escapeHtml } from '../../utils/helpers.js';
 
 const STATUS_SORT_ORDER = {
@@ -103,6 +104,7 @@ export function comparePlannerEntriesForSort(sortBy, a, b) {
 
 export function buildBookDetailViewModel({ book, details, errorMessage = '' }) {
   const doc = details?.doc || null;
+  const coverId = doc?.cover_i || book.cover_id || null;
   const completionPercent = book.total_pages > 0
     ? Math.min(100, Math.round((book.pages / book.total_pages) * 100))
     : 0;
@@ -131,8 +133,16 @@ export function buildBookDetailViewModel({ book, details, errorMessage = '' }) {
       ? (details?.description || 'No description available for this edition.')
       : 'No description found for this book.');
 
-  const coverMarkup = doc?.cover_i
-    ? `<img class="book-modal-cover" src="https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg" alt="">`
+  const coverMarkup = coverId
+    ? `
+      <img
+        class="book-modal-cover"
+        src="${createCoverUrl(coverId, 'L')}"
+        alt=""
+        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+      >
+      <div class="book-modal-cover-placeholder" style="display:none">Book</div>
+    `
     : '<div class="book-modal-cover-placeholder">Book</div>';
 
   const datesMarkup = [

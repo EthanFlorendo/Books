@@ -412,6 +412,10 @@ tr.clickable-row {
   font-weight: 600;
 }
 
+.book-cover-placeholder.is-loading {
+  opacity: 0.82;
+}
+
 .no-books {
   padding: 48px 22px;
   text-align: center;

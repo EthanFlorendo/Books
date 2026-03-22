@@ -1,8 +1,39 @@
 import { formatDate } from '../utils/dateUtils.js';
+import { createCoverUrl } from '../services/openLibraryService.js';
 import { escapeHtml, formatStarsMarkup } from '../utils/helpers.js';
 
-function renderCoverPlaceholder(title) {
-  return `<div class="book-cover-placeholder" data-fetch="${escapeHtml(title)}">Book</div>`;
+function renderStaticCoverPlaceholder(style = '') {
+  return `<div class="book-cover-placeholder"${style ? ` style="${style}"` : ''}>Book</div>`;
+}
+
+function renderCoverPlaceholder({ title, author = '', entryId, entryKind }) {
+  return `
+    <div
+      class="book-cover-placeholder"
+      data-cover-title="${escapeHtml(title)}"
+      data-cover-author="${escapeHtml(author)}"
+      data-entry-id="${escapeHtml(String(entryId ?? ''))}"
+      data-entry-kind="${escapeHtml(entryKind)}"
+    >Book</div>
+  `;
+}
+
+function renderCoverMarkup({ title, author = '', coverId, entryId, entryKind }) {
+  if (!coverId) {
+    return renderCoverPlaceholder({ title, author, entryId, entryKind });
+  }
+
+  return `
+    <img
+      class="book-cover"
+      src="${escapeHtml(createCoverUrl(coverId, 'M'))}"
+      alt=""
+      loading="lazy"
+      decoding="async"
+      onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+    >
+    ${renderStaticCoverPlaceholder('display:none')}
+  `;
 }
 
 function renderMobileMeta(items) {
@@ -25,7 +56,13 @@ export function renderBookCardRow({ reader, book, isAdmin }) {
   return `
     <tr class="clickable-row" data-book-row data-reader="${reader}" data-book-id="${book.id}">
       <td class="cover-cell">
-        ${renderCoverPlaceholder(book.title)}
+        ${renderCoverMarkup({
+          title: book.title,
+          author: book.author,
+          coverId: book.cover_id,
+          entryId: book.id,
+          entryKind: 'book',
+        })}
       </td>
       <td class="padded title-cell" data-label="Title">
         <strong>${escapeHtml(book.title)}</strong>
@@ -66,7 +103,13 @@ export function renderPlannerCardRow({ reader, entry, isAdmin }) {
   return `
     <tr class="clickable-row" data-planner-row data-reader="${reader}" data-plan-id="${entry.id}">
       <td class="cover-cell">
-        ${renderCoverPlaceholder(entry.title)}
+        ${renderCoverMarkup({
+          title: entry.title,
+          author: entry.author,
+          coverId: entry.cover_id,
+          entryId: entry.id,
+          entryKind: 'planner',
+        })}
       </td>
       <td class="padded title-cell" data-label="Title">
         <strong>${escapeHtml(entry.title)}</strong>
