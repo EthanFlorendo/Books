@@ -2,10 +2,10 @@ import { DEFAULT_TAB } from '../../utils/constants.js';
 import { toTabKey } from '../../utils/helpers.js';
 import { renderHomePage } from './HomePage.js';
 
-export function mountHomePage(rootElement) {
-  rootElement.innerHTML = renderHomePage();
+export function mountHomePage(rootElement, activeTab = DEFAULT_TAB) {
+  rootElement.innerHTML = renderHomePage(activeTab);
   bindAdminDocking();
-  showActiveTab(DEFAULT_TAB);
+  showActiveTab(activeTab);
 }
 
 export function bindHomeNavigation(onTabChange) {

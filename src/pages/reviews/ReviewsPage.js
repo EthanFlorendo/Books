@@ -294,9 +294,9 @@ async function hydrateReviewDetailCover(scopeElement) {
   image.src = toLargeCoverUrl(coverUrl);
 }
 
-export function renderReviewsSection() {
+export function renderReviewsSection(activeTab = null) {
   return `
-    <section id="tab-reviews" class="tab-content">
+    <section id="tab-reviews" class="tab-content${activeTab === 'reviews' ? ' active' : ''}">
       <div id="reviews-page-root" class="reviews-page"></div>
     </section>
   `;

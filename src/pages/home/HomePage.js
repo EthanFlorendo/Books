@@ -5,15 +5,19 @@ import { renderReviewsSection } from '../reviews/ReviewsPage.js';
 import { DEFAULT_TAB, READERS } from '../../utils/constants.js';
 import { toTabKey } from '../../utils/helpers.js';
 
-function renderReaderTabs() {
+function getTabContentClass(tabKey, activeTab) {
+  return `tab-content${activeTab === tabKey ? ' active' : ''}`;
+}
+
+function renderReaderTabs(activeTab) {
   return READERS.map(reader => `
-    <section id="tab-${toTabKey(reader)}" class="tab-content">
+    <section id="tab-${toTabKey(reader)}" class="${getTabContentClass(toTabKey(reader), activeTab)}">
       <div class="user-panel" data-reader="${reader}"></div>
     </section>
   `).join('');
 }
 
-export function renderHomePage() {
+export function renderHomePage(activeTab = DEFAULT_TAB) {
   return `
     <header class="site-header">
       <div id="nav-admin-home" class="site-header-admin-slot">
@@ -26,10 +30,10 @@ export function renderHomePage() {
       </div>
     </header>
 
-    ${renderNavbar(DEFAULT_TAB)}
+    ${renderNavbar(activeTab)}
 
     <main class="site-main">
-      <section id="tab-stats" class="tab-content active">
+      <section id="tab-stats" class="${getTabContentClass('stats', activeTab)}">
         <div class="leaderboard">
           <h2>Monthly Activity</h2>
           <div id="leaderboard-list"></div>
@@ -37,9 +41,9 @@ export function renderHomePage() {
         <div class="stats-grid" id="stats-grid"></div>
       </section>
 
-      ${renderReviewsSection()}
+      ${renderReviewsSection(activeTab)}
 
-      ${renderReaderTabs()}
+      ${renderReaderTabs(activeTab)}
     </main>
 
     ${renderEditModalShell()}
