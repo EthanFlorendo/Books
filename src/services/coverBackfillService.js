@@ -10,7 +10,7 @@ function buildEntryKey(kind, id) {
   return `${kind}:${String(id)}`;
 }
 
-function getEntriesMissingCoverIds() {
+function getEntriesMissingMetadata() {
   const { booksByReader, plannerByReader, isAdmin } = getAppState();
   if (!isAdmin) return [];
 
@@ -23,6 +23,8 @@ function getEntriesMissingCoverIds() {
         title: book.title,
         author: book.author,
         coverId: book.cover_id,
+        workKey: book.open_library_work_key || null,
+        editionKey: book.open_library_edition_key || null,
       }))
     : [];
 
@@ -35,20 +37,39 @@ function getEntriesMissingCoverIds() {
         title: entry.title,
         author: entry.author,
         coverId: entry.cover_id,
+        workKey: entry.open_library_work_key || null,
+        editionKey: entry.open_library_edition_key || null,
       }))
     : [];
 
   return [...bookEntries, ...plannerEntries]
-    .filter(entry => entry.id && !entry.coverId && String(entry.title || '').trim())
+    .filter(entry => entry.id && String(entry.title || '').trim())
+    .filter(entry => !entry.coverId || !entry.workKey || !entry.editionKey)
     .filter(entry => !attemptedEntryKeys.has(buildEntryKey(entry.kind, entry.id)));
 }
 
-async function persistCoverIdForEntry(entry, coverId) {
-  if (entry.kind === 'planner') {
-    return updatePlannerEntry(entry.id, { cover_id: coverId });
+async function persistMetadataForEntry(entry, metadata) {
+  const nextPayload = {};
+
+  if (!entry.coverId && metadata?.coverId) {
+    nextPayload.cover_id = metadata.coverId;
+  }
+  if (!entry.workKey && metadata?.workKey) {
+    nextPayload.open_library_work_key = metadata.workKey;
+  }
+  if (!entry.editionKey && metadata?.editionKey) {
+    nextPayload.open_library_edition_key = metadata.editionKey;
   }
 
-  return updateBook(entry.id, { cover_id: coverId });
+  if (!Object.keys(nextPayload).length) {
+    return false;
+  }
+
+  if (entry.kind === 'planner') {
+    return updatePlannerEntry(entry.id, nextPayload);
+  }
+
+  return updateBook(entry.id, nextPayload);
 }
 
 export async function backfillMissingCoverIds() {
@@ -56,7 +77,7 @@ export async function backfillMissingCoverIds() {
     return backfillPromise;
   }
 
-  const entriesToBackfill = getEntriesMissingCoverIds();
+  const entriesToBackfill = getEntriesMissingMetadata();
   if (!entriesToBackfill.length) {
     return false;
   }
@@ -71,10 +92,10 @@ export async function backfillMissingCoverIds() {
         attemptedEntryKeys.add(buildEntryKey(entry.kind, entry.id));
 
         try {
-          const coverMetadata = await fetchCoverMetadata(entry.title, entry.author || '');
-          if (!coverMetadata?.coverId) return false;
+          const coverMetadata = await fetchCoverMetadata(entry.title, entry.author || '', entry.coverId || null);
+          if (!coverMetadata) return false;
 
-          return Boolean(await persistCoverIdForEntry(entry, coverMetadata.coverId));
+          return Boolean(await persistMetadataForEntry(entry, coverMetadata));
         } catch {
           return false;
         }

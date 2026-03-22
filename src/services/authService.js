@@ -237,13 +237,13 @@ export async function syncAdminState() {
 export function subscribeToAuthChanges(onChange) {
   const supabaseClient = requireSupabaseClient();
 
-  return supabaseClient.auth.onAuthStateChange((_event, session) => {
+  return supabaseClient.auth.onAuthStateChange((event, session) => {
     const isAdmin = isConfiguredAdmin(session?.user?.email || '');
     setAdminStatus(isAdmin);
     if (isAdmin) resolvePendingAdminLogin(true);
 
     if (typeof onChange === 'function') {
-      onChange(isAdmin);
+      onChange(event, isAdmin);
     }
   });
 }

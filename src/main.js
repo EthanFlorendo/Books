@@ -1,7 +1,8 @@
 import { bindAdminLoginEvents, ensureAdminAccess, subscribeToAuthChanges, syncAdminState, toggleAdminAccess } from './services/authService.js';
-import { fetchBooks, groupBooksByReader, seedBooksIfEmpty, verifyBooksTable } from './services/booksService.js';
+import { fetchBooks, groupBooksByReader, seedBooksIfEmpty } from './services/booksService.js';
 import { backfillMissingCoverIds } from './services/coverBackfillService.js';
-import { fetchPlannerEntries, groupPlannerEntriesByReader, verifyPlannerTable } from './services/plannerService.js';
+import { loadCachedReadingData, saveCachedReadingData } from './services/dataCacheService.js';
+import { fetchPlannerEntries, groupPlannerEntriesByReader } from './services/plannerService.js';
 import { initializeSupabaseClient } from './services/supabaseClient.js';
 import { initializeTheme } from './services/themeService.js';
 import { getAppState, setActiveTab, setBooksByReader, setPlannerByReader, setReaderSort, toggleReaderFormOpen } from './state/appState.js';
@@ -30,30 +31,56 @@ function renderApp() {
   }
 }
 
-async function refreshBooksAndRender() {
+function applyReadingData({ books, plannerEntries }) {
+  setBooksByReader(groupBooksByReader(books));
+  setPlannerByReader(groupPlannerEntriesByReader(plannerEntries));
+}
+
+function hydrateReadingDataFromCache() {
+  const cachedSnapshot = loadCachedReadingData();
+  if (!cachedSnapshot) {
+    return false;
+  }
+
+  applyReadingData(cachedSnapshot);
+  renderApp();
+  setLoadingVisible(false);
+  return true;
+}
+
+async function refreshBooksAndRender({ showLoading = true, notifyOnError = true } = {}) {
   try {
-    setLoadingVisible(true);
+    if (showLoading) {
+      setLoadingVisible(true);
+    }
+
     const [books, plannerEntries] = await Promise.all([
       fetchBooks(),
       fetchPlannerEntries(),
     ]);
-    setBooksByReader(groupBooksByReader(books));
-    setPlannerByReader(groupPlannerEntriesByReader(plannerEntries));
+    applyReadingData({ books, plannerEntries });
+    saveCachedReadingData({ books, plannerEntries });
     renderApp();
 
     if (getAppState().isAdmin) {
       void backfillMissingCoverIds()
         .then(updatedAnyEntries => {
           if (updatedAnyEntries) {
-            void refreshBooksAndRender();
+            void refreshBooksAndRender({ showLoading: false, notifyOnError: false });
           }
         })
         .catch(() => {});
     }
   } catch (error) {
-    window.alert(`Could not load reading data: ${error.message}`);
+    if (notifyOnError) {
+      window.alert(`Could not load reading data: ${error.message}`);
+    } else {
+      console.error('Could not refresh reading data.', error);
+    }
   } finally {
-    setLoadingVisible(false);
+    if (showLoading) {
+      setLoadingVisible(false);
+    }
   }
 }
 
@@ -117,18 +144,33 @@ async function bootstrap() {
       onEditPlanner: openPlannerEditModal,
     });
 
-    renderApp();
     initializeSupabaseClient();
-    await verifyBooksTable();
-    await verifyPlannerTable();
+    const hasCachedReadingData = hydrateReadingDataFromCache();
 
-    subscribeToAuthChanges(async isAdmin => {
-      if (!isAdmin) {
+    const isAdmin = await syncAdminState();
+
+    if (isAdmin) {
+      await seedBooksIfEmpty();
+    }
+
+    await refreshBooksAndRender({
+      showLoading: !hasCachedReadingData,
+      notifyOnError: !hasCachedReadingData,
+    });
+
+    let hasSkippedInitialAuthEvent = false;
+    subscribeToAuthChanges(async (_event, nextIsAdmin) => {
+      if (!hasSkippedInitialAuthEvent) {
+        hasSkippedInitialAuthEvent = true;
+        return;
+      }
+
+      if (!nextIsAdmin) {
         closeEditModal();
       }
 
       try {
-        if (isAdmin) {
+        if (nextIsAdmin) {
           await seedBooksIfEmpty();
         }
 
@@ -137,14 +179,6 @@ async function bootstrap() {
         window.alert(`Authentication sync failed: ${error.message}`);
       }
     });
-
-    await syncAdminState();
-
-    if (getAppState().isAdmin) {
-      await seedBooksIfEmpty();
-    }
-
-    await refreshBooksAndRender();
   } catch (error) {
     setLoadingVisible(false);
     window.alert(`Database connection failed: ${error.message || 'Unknown error'}`);

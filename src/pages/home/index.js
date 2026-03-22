@@ -49,7 +49,7 @@ export function showActiveTab(tab) {
 }
 
 export function setLoadingVisible(isVisible) {
-  document.getElementById('loading')?.classList.toggle('show', Boolean(isVisible));
+  document.getElementById('app-loading')?.classList.toggle('show', Boolean(isVisible));
 }
 
 export function getReaderPanel(reader) {

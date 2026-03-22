@@ -15,8 +15,6 @@ function renderReaderTabs() {
 
 export function renderHomePage() {
   return `
-    <div id="loading">Loading data...</div>
-
     <header class="site-header">
       <div id="nav-admin-home" class="site-header-admin-slot">
         <div id="nav-admin-region" class="site-header-admin" aria-live="polite"></div>

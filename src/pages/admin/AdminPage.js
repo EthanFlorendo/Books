@@ -110,28 +110,38 @@ function normalizeEntryIdentityValue(value) {
     .replace(/\s+/g, ' ');
 }
 
-function setSelectedSearchCover(reader, result) {
+function clearSelectedSearchMatch(reader) {
   const titleField = getReaderTitleField(reader);
   if (!titleField) return;
-
-  if (result?.coverId) {
-    titleField.dataset.selectedCoverId = String(result.coverId);
-    titleField.dataset.selectedCoverTitle = normalizeEntryIdentityValue(result.title);
-    titleField.dataset.selectedCoverAuthor = normalizeEntryIdentityValue(result.author);
-    return;
-  }
 
   delete titleField.dataset.selectedCoverId;
   delete titleField.dataset.selectedCoverTitle;
   delete titleField.dataset.selectedCoverAuthor;
+  delete titleField.dataset.selectedWorkKey;
+  delete titleField.dataset.selectedEditionKey;
 }
 
-function getSelectedSearchCoverId(reader, payload) {
+function setSelectedSearchCover(reader, result) {
+  const titleField = getReaderTitleField(reader);
+  if (!titleField) return;
+
+  if (result?.coverId || result?.workKey || result?.editionKey) {
+    if (result.coverId) {
+      titleField.dataset.selectedCoverId = String(result.coverId);
+    }
+    titleField.dataset.selectedCoverTitle = normalizeEntryIdentityValue(result.title);
+    titleField.dataset.selectedCoverAuthor = normalizeEntryIdentityValue(result.author);
+    titleField.dataset.selectedWorkKey = result.workKey || '';
+    titleField.dataset.selectedEditionKey = result.editionKey || '';
+    return;
+  }
+
+  clearSelectedSearchMatch(reader);
+}
+
+function getSelectedSearchMatch(reader, payload) {
   const titleField = getReaderTitleField(reader);
   if (!titleField) return null;
-
-  const selectedCoverId = Number(titleField.dataset.selectedCoverId || '');
-  if (!selectedCoverId) return null;
 
   const selectedTitle = titleField.dataset.selectedCoverTitle || '';
   const selectedAuthor = titleField.dataset.selectedCoverAuthor || '';
@@ -142,7 +152,13 @@ function getSelectedSearchCoverId(reader, payload) {
     return null;
   }
 
-  return selectedCoverId;
+  const selectedCoverId = Number(titleField.dataset.selectedCoverId || '');
+
+  return {
+    coverId: selectedCoverId || null,
+    workKey: titleField.dataset.selectedWorkKey || null,
+    editionKey: titleField.dataset.selectedEditionKey || null,
+  };
 }
 
 function isSameEntryIdentity(left, right) {
@@ -150,30 +166,55 @@ function isSameEntryIdentity(left, right) {
     && normalizeEntryIdentityValue(left?.author) === normalizeEntryIdentityValue(right?.author);
 }
 
-async function withResolvedCoverId(payload, existingEntry = null, preferredCoverId = null) {
+async function withResolvedCoverId(payload, existingEntry = null, preferredMatch = null) {
   const title = String(payload?.title || '').trim();
   const author = String(payload?.author || '').trim();
 
   if (!title) {
-    return { ...payload, cover_id: null };
+    return {
+      ...payload,
+      cover_id: null,
+      open_library_work_key: null,
+      open_library_edition_key: null,
+    };
   }
 
-  if (preferredCoverId) {
-    return { ...payload, cover_id: preferredCoverId };
+  if (preferredMatch?.coverId || preferredMatch?.workKey || preferredMatch?.editionKey) {
+    return {
+      ...payload,
+      cover_id: preferredMatch.coverId || existingEntry?.cover_id || null,
+      open_library_work_key: preferredMatch.workKey || existingEntry?.open_library_work_key || null,
+      open_library_edition_key: preferredMatch.editionKey || existingEntry?.open_library_edition_key || null,
+    };
   }
 
-  // Preserve the existing saved cover when the user edits fields like notes
-  // without actually changing which book this entry represents.
-  if (existingEntry?.cover_id && isSameEntryIdentity(existingEntry, payload)) {
-    return { ...payload, cover_id: existingEntry.cover_id };
+  const existingMatch = isSameEntryIdentity(existingEntry, payload)
+    ? {
+        coverId: existingEntry?.cover_id || null,
+        workKey: existingEntry?.open_library_work_key || null,
+        editionKey: existingEntry?.open_library_edition_key || null,
+      }
+    : null;
+
+  // Keep the current saved metadata when the entry is still the same book.
+  // If older rows only have a cover saved, we'll reuse that cover as the
+  // preferred match and fill in the missing exact Open Library keys below.
+  if (existingMatch?.workKey || existingMatch?.editionKey) {
+    return {
+      ...payload,
+      cover_id: existingMatch.coverId,
+      open_library_work_key: existingMatch.workKey,
+      open_library_edition_key: existingMatch.editionKey,
+    };
   }
 
-  const coverMetadata = await fetchCoverMetadata(title, author);
-  if (coverMetadata?.coverId) {
-    return { ...payload, cover_id: coverMetadata.coverId };
-  }
-
-  return { ...payload, cover_id: null };
+  const coverMetadata = await fetchCoverMetadata(title, author, existingMatch?.coverId || null);
+  return {
+    ...payload,
+    cover_id: existingMatch?.coverId || coverMetadata?.coverId || null,
+    open_library_work_key: existingMatch?.workKey || coverMetadata?.workKey || null,
+    open_library_edition_key: existingMatch?.editionKey || coverMetadata?.editionKey || null,
+  };
 }
 
 function setActionButtonState(reader, buttonId, { disabled, label }) {
@@ -261,7 +302,7 @@ export async function saveNewBookForReader(reader) {
   if (!(await ensureAdminAccess('add a book'))) return false;
 
   const bookPayload = buildBookPayloadFromReaderForm(reader);
-  const preferredCoverId = getSelectedSearchCoverId(reader, bookPayload);
+  const preferredMatch = getSelectedSearchMatch(reader, bookPayload);
   if (!bookPayload.title || !bookPayload.author) {
     window.alert('Title and Author are required.');
     return false;
@@ -277,7 +318,7 @@ export async function saveNewBookForReader(reader) {
     }
 
     setActionButtonState(reader, 'add-btn', { disabled: true, label: 'Saving...' });
-    await addBook(await withResolvedCoverId(bookPayload, null, preferredCoverId));
+    await addBook(await withResolvedCoverId(bookPayload, null, preferredMatch));
     setReaderFormOpen(reader, false);
     await adminHandlers.onRefreshData();
 
@@ -294,7 +335,7 @@ export async function saveNewPlannerEntryForReader(reader) {
   if (!(await ensureAdminAccess('add a planner entry'))) return false;
 
   const plannerPayload = buildPlannerPayloadFromReaderForm(reader);
-  const preferredCoverId = getSelectedSearchCoverId(reader, plannerPayload);
+  const preferredMatch = getSelectedSearchMatch(reader, plannerPayload);
   if (!plannerPayload.title || !plannerPayload.author) {
     window.alert('Title and Author are required.');
     return false;
@@ -310,7 +351,7 @@ export async function saveNewPlannerEntryForReader(reader) {
     }
 
     setActionButtonState(reader, 'plan-add-btn', { disabled: true, label: 'Saving...' });
-    await addPlannerEntry(await withResolvedCoverId(plannerPayload, null, preferredCoverId));
+    await addPlannerEntry(await withResolvedCoverId(plannerPayload, null, preferredMatch));
     setReaderFormOpen(reader, false);
     await adminHandlers.onRefreshData();
 

@@ -3,7 +3,8 @@ import { isThisMonth } from '../utils/dateUtils.js';
 import { createEmptyBooksByReader } from '../state/appState.js';
 import { requireSupabaseClient } from './supabaseClient.js';
 
-let supportsBookCoverIdColumn = true;
+const OPTIONAL_BOOK_METADATA_COLUMNS = ['cover_id', 'open_library_work_key', 'open_library_edition_key'];
+const bookOptionalColumnSupport = Object.fromEntries(OPTIONAL_BOOK_METADATA_COLUMNS.map(column => [column, true]));
 
 const SEED_BOOKS = [
   { reader: 'Ewan', title: 'The Hunting of The Snark', author: 'Lewis Carroll', pages: 25, total_pages: 25, type: 'Poetry', status: 'Completed', date_started: '2026-03-13', date_finished: '2026-03-13' },
@@ -14,18 +15,30 @@ const SEED_BOOKS = [
   { reader: 'Isaac', title: 'Wool', author: 'Hugh Howey', pages: 320, total_pages: 584, type: 'Novel', status: 'Current', date_started: '2026-03-01', date_finished: null },
 ];
 
-function hasCoverIdField(payload) {
-  return Boolean(payload) && Object.prototype.hasOwnProperty.call(payload, 'cover_id');
+function hasOptionalBookMetadataFields(payload) {
+  return OPTIONAL_BOOK_METADATA_COLUMNS.some(column => Boolean(payload) && Object.prototype.hasOwnProperty.call(payload, column));
 }
 
-function omitCoverId(payload) {
-  const { cover_id, ...rest } = payload || {};
-  return rest;
+function omitUnsupportedBookMetadata(payload) {
+  if (!payload) return {};
+
+  const sanitizedPayload = { ...payload };
+  OPTIONAL_BOOK_METADATA_COLUMNS.forEach(column => {
+    if (!bookOptionalColumnSupport[column]) {
+      delete sanitizedPayload[column];
+    }
+  });
+
+  return sanitizedPayload;
 }
 
-function isMissingCoverIdColumnError(error) {
+function getMissingBookMetadataColumn(error) {
   const message = String(error?.message || error?.details || error?.hint || '').toLowerCase();
-  return message.includes('cover_id') && (message.includes('column') || message.includes('schema cache') || message.includes('could not find'));
+  if (!(message.includes('column') || message.includes('schema cache') || message.includes('could not find'))) {
+    return '';
+  }
+
+  return OPTIONAL_BOOK_METADATA_COLUMNS.find(column => message.includes(column)) || '';
 }
 
 async function insertBookPayload(supabaseClient, bookPayload) {
@@ -37,7 +50,7 @@ async function updateBookPayload(supabaseClient, bookId, bookPayload) {
 }
 
 export function hasBookCoverIdSupport() {
-  return supportsBookCoverIdColumn;
+  return bookOptionalColumnSupport.cover_id;
 }
 
 export async function verifyBooksTable() {
@@ -82,52 +95,70 @@ export function groupBooksByReader(books) {
 
 export async function addBook(bookPayload) {
   const supabaseClient = requireSupabaseClient();
-  let didPersistCoverId = hasCoverIdField(bookPayload);
-  let { error } = await insertBookPayload(supabaseClient, bookPayload);
+  let didPersistOptionalMetadata = hasOptionalBookMetadataFields(bookPayload);
+  let nextPayload = { ...bookPayload };
+  let { error } = await insertBookPayload(supabaseClient, nextPayload);
 
-  if (error && hasCoverIdField(bookPayload) && isMissingCoverIdColumnError(error)) {
-    supportsBookCoverIdColumn = false;
-    didPersistCoverId = false;
+  while (error && hasOptionalBookMetadataFields(nextPayload)) {
+    const missingColumn = getMissingBookMetadataColumn(error);
+    if (!missingColumn) break;
 
-    const fallbackPayload = omitCoverId(bookPayload);
-    if (Object.keys(fallbackPayload).length) {
-      ({ error } = await insertBookPayload(supabaseClient, fallbackPayload));
-    } else {
+    bookOptionalColumnSupport[missingColumn] = false;
+    didPersistOptionalMetadata = false;
+    nextPayload = omitUnsupportedBookMetadata(nextPayload);
+
+    if (!Object.keys(nextPayload).length) {
       error = null;
+      break;
     }
+
+    ({ error } = await insertBookPayload(supabaseClient, nextPayload));
   }
 
   if (error) throw error;
-  if (didPersistCoverId) {
-    supportsBookCoverIdColumn = true;
+  if (didPersistOptionalMetadata) {
+    OPTIONAL_BOOK_METADATA_COLUMNS.forEach(column => {
+      if (Object.prototype.hasOwnProperty.call(bookPayload, column)) {
+        bookOptionalColumnSupport[column] = true;
+      }
+    });
   }
 
-  return didPersistCoverId;
+  return didPersistOptionalMetadata;
 }
 
 export async function updateBook(bookId, bookPayload) {
   const supabaseClient = requireSupabaseClient();
-  let didPersistCoverId = hasCoverIdField(bookPayload);
-  let { error } = await updateBookPayload(supabaseClient, bookId, bookPayload);
+  let didPersistOptionalMetadata = hasOptionalBookMetadataFields(bookPayload);
+  let nextPayload = { ...bookPayload };
+  let { error } = await updateBookPayload(supabaseClient, bookId, nextPayload);
 
-  if (error && hasCoverIdField(bookPayload) && isMissingCoverIdColumnError(error)) {
-    supportsBookCoverIdColumn = false;
-    didPersistCoverId = false;
+  while (error && hasOptionalBookMetadataFields(nextPayload)) {
+    const missingColumn = getMissingBookMetadataColumn(error);
+    if (!missingColumn) break;
 
-    const fallbackPayload = omitCoverId(bookPayload);
-    if (Object.keys(fallbackPayload).length) {
-      ({ error } = await updateBookPayload(supabaseClient, bookId, fallbackPayload));
-    } else {
+    bookOptionalColumnSupport[missingColumn] = false;
+    didPersistOptionalMetadata = false;
+    nextPayload = omitUnsupportedBookMetadata(nextPayload);
+
+    if (!Object.keys(nextPayload).length) {
       error = null;
+      break;
     }
+
+    ({ error } = await updateBookPayload(supabaseClient, bookId, nextPayload));
   }
 
   if (error) throw error;
-  if (didPersistCoverId) {
-    supportsBookCoverIdColumn = true;
+  if (didPersistOptionalMetadata) {
+    OPTIONAL_BOOK_METADATA_COLUMNS.forEach(column => {
+      if (Object.prototype.hasOwnProperty.call(bookPayload, column)) {
+        bookOptionalColumnSupport[column] = true;
+      }
+    });
   }
 
-  return didPersistCoverId;
+  return didPersistOptionalMetadata;
 }
 
 export async function deleteBook(bookId) {

@@ -206,7 +206,7 @@ async function openDetailView(entry) {
   if (notes) notes.innerHTML = '';
 
   try {
-    const details = await fetchBookDetails(entry.title, entry.author);
+    const details = await fetchBookDetails(entry);
     const viewModel = buildBookDetailViewModel({ book: entry, details });
     applyBookDetailViewModel(viewModel);
   } catch {

@@ -2,20 +2,33 @@ import { createEmptyPlannerByReader } from '../state/appState.js';
 import { requireSupabaseClient } from './supabaseClient.js';
 
 const PLANNER_TABLE = 'planned_books';
-let supportsPlannerCoverIdColumn = true;
+const OPTIONAL_PLANNER_METADATA_COLUMNS = ['cover_id', 'open_library_work_key', 'open_library_edition_key'];
+const plannerOptionalColumnSupport = Object.fromEntries(OPTIONAL_PLANNER_METADATA_COLUMNS.map(column => [column, true]));
 
-function hasCoverIdField(payload) {
-  return Boolean(payload) && Object.prototype.hasOwnProperty.call(payload, 'cover_id');
+function hasOptionalPlannerMetadataFields(payload) {
+  return OPTIONAL_PLANNER_METADATA_COLUMNS.some(column => Boolean(payload) && Object.prototype.hasOwnProperty.call(payload, column));
 }
 
-function omitCoverId(payload) {
-  const { cover_id, ...rest } = payload || {};
-  return rest;
+function omitUnsupportedPlannerMetadata(payload) {
+  if (!payload) return {};
+
+  const sanitizedPayload = { ...payload };
+  OPTIONAL_PLANNER_METADATA_COLUMNS.forEach(column => {
+    if (!plannerOptionalColumnSupport[column]) {
+      delete sanitizedPayload[column];
+    }
+  });
+
+  return sanitizedPayload;
 }
 
-function isMissingCoverIdColumnError(error) {
+function getMissingPlannerMetadataColumn(error) {
   const message = String(error?.message || error?.details || error?.hint || '').toLowerCase();
-  return message.includes('cover_id') && (message.includes('column') || message.includes('schema cache') || message.includes('could not find'));
+  if (!(message.includes('column') || message.includes('schema cache') || message.includes('could not find'))) {
+    return '';
+  }
+
+  return OPTIONAL_PLANNER_METADATA_COLUMNS.find(column => message.includes(column)) || '';
 }
 
 async function insertPlannerPayload(supabaseClient, entryPayload) {
@@ -27,7 +40,7 @@ async function updatePlannerPayload(supabaseClient, entryId, entryPayload) {
 }
 
 export function hasPlannerCoverIdSupport() {
-  return supportsPlannerCoverIdColumn;
+  return plannerOptionalColumnSupport.cover_id;
 }
 
 export async function verifyPlannerTable() {
@@ -59,52 +72,70 @@ export function groupPlannerEntriesByReader(entries) {
 
 export async function addPlannerEntry(entryPayload) {
   const supabaseClient = requireSupabaseClient();
-  let didPersistCoverId = hasCoverIdField(entryPayload);
-  let { error } = await insertPlannerPayload(supabaseClient, entryPayload);
+  let didPersistOptionalMetadata = hasOptionalPlannerMetadataFields(entryPayload);
+  let nextPayload = { ...entryPayload };
+  let { error } = await insertPlannerPayload(supabaseClient, nextPayload);
 
-  if (error && hasCoverIdField(entryPayload) && isMissingCoverIdColumnError(error)) {
-    supportsPlannerCoverIdColumn = false;
-    didPersistCoverId = false;
+  while (error && hasOptionalPlannerMetadataFields(nextPayload)) {
+    const missingColumn = getMissingPlannerMetadataColumn(error);
+    if (!missingColumn) break;
 
-    const fallbackPayload = omitCoverId(entryPayload);
-    if (Object.keys(fallbackPayload).length) {
-      ({ error } = await insertPlannerPayload(supabaseClient, fallbackPayload));
-    } else {
+    plannerOptionalColumnSupport[missingColumn] = false;
+    didPersistOptionalMetadata = false;
+    nextPayload = omitUnsupportedPlannerMetadata(nextPayload);
+
+    if (!Object.keys(nextPayload).length) {
       error = null;
+      break;
     }
+
+    ({ error } = await insertPlannerPayload(supabaseClient, nextPayload));
   }
 
   if (error) throw error;
-  if (didPersistCoverId) {
-    supportsPlannerCoverIdColumn = true;
+  if (didPersistOptionalMetadata) {
+    OPTIONAL_PLANNER_METADATA_COLUMNS.forEach(column => {
+      if (Object.prototype.hasOwnProperty.call(entryPayload, column)) {
+        plannerOptionalColumnSupport[column] = true;
+      }
+    });
   }
 
-  return didPersistCoverId;
+  return didPersistOptionalMetadata;
 }
 
 export async function updatePlannerEntry(entryId, entryPayload) {
   const supabaseClient = requireSupabaseClient();
-  let didPersistCoverId = hasCoverIdField(entryPayload);
-  let { error } = await updatePlannerPayload(supabaseClient, entryId, entryPayload);
+  let didPersistOptionalMetadata = hasOptionalPlannerMetadataFields(entryPayload);
+  let nextPayload = { ...entryPayload };
+  let { error } = await updatePlannerPayload(supabaseClient, entryId, nextPayload);
 
-  if (error && hasCoverIdField(entryPayload) && isMissingCoverIdColumnError(error)) {
-    supportsPlannerCoverIdColumn = false;
-    didPersistCoverId = false;
+  while (error && hasOptionalPlannerMetadataFields(nextPayload)) {
+    const missingColumn = getMissingPlannerMetadataColumn(error);
+    if (!missingColumn) break;
 
-    const fallbackPayload = omitCoverId(entryPayload);
-    if (Object.keys(fallbackPayload).length) {
-      ({ error } = await updatePlannerPayload(supabaseClient, entryId, fallbackPayload));
-    } else {
+    plannerOptionalColumnSupport[missingColumn] = false;
+    didPersistOptionalMetadata = false;
+    nextPayload = omitUnsupportedPlannerMetadata(nextPayload);
+
+    if (!Object.keys(nextPayload).length) {
       error = null;
+      break;
     }
+
+    ({ error } = await updatePlannerPayload(supabaseClient, entryId, nextPayload));
   }
 
   if (error) throw error;
-  if (didPersistCoverId) {
-    supportsPlannerCoverIdColumn = true;
+  if (didPersistOptionalMetadata) {
+    OPTIONAL_PLANNER_METADATA_COLUMNS.forEach(column => {
+      if (Object.prototype.hasOwnProperty.call(entryPayload, column)) {
+        plannerOptionalColumnSupport[column] = true;
+      }
+    });
   }
 
-  return didPersistCoverId;
+  return didPersistOptionalMetadata;
 }
 
 export async function deletePlannerEntry(entryId) {
